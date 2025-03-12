@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
+            $table->id(); // معرف المستخدم
+            $table->string('name'); // اسم المستخدم
+            $table->string('email')->unique(); // البريد الإلكتروني (فريد)
+            $table->timestamp('email_verified_at')->nullable(); // تاريخ تأكيد البريد الإلكتروني
+            $table->string('password'); // كلمة المرور
+            $table->enum('type', ['pharmacy', 'warehouse']); // نوع المستخدم (صيدلية أو مستودع)
+            $table->rememberToken(); // رمز تذكر تسجيل الدخول
+            $table->timestamps(); // تواريخ الإنشاء والتحديث
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
