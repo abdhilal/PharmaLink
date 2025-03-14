@@ -13,8 +13,8 @@ class UserSeeder extends Seeder
         // إنشاء صيدلية
         $pharmacy = User::create([
             'name' => 'Pharmacy A',
-            'email' => 'pharmacy@example.com',
-            'password' => Hash::make('password'),
+            'email' => 'admin@admin.com',
+            'password' => Hash::make('12345678'),
             'role' => 'pharmacy',
         ]);
 

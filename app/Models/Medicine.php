@@ -18,6 +18,10 @@ class Medicine extends Model
         return $this->belongsTo(Company::class);
     }
     
+    public function orderItems()
+{
+    return $this->hasMany(OrderItem::class);
+}
 
     
 }

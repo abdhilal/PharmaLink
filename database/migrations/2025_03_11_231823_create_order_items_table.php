@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('quantity'); // الكمية المطلوبة
             $table->decimal('price_per_unit', 8, 2); // سعر الوحدة
             $table->decimal('subtotal', 8, 2); // المجموع الفرعي
+            $table->timestamps(); // تاريخ الإنشاء والتحديث
         });
     }
 
