@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique(); // البريد الإلكتروني (فريد)
             $table->timestamp('email_verified_at')->nullable(); // تاريخ تأكيد البريد الإلكتروني
             $table->string('password'); // كلمة المرور
-            $table->enum('type', ['pharmacy', 'warehouse']); // نوع المستخدم (صيدلية أو مستودع)
+            $table->enum('role', ['pharmacy', 'warehouse']); // نوع المستخدم (صيدلية أو مستودع)
             $table->rememberToken(); // رمز تذكر تسجيل الدخول
             $table->timestamps(); // تواريخ الإنشاء والتحديث
         });

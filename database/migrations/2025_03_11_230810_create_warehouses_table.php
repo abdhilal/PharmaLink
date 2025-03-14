@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id(); // معرف المستودع
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // معرف المستخدم المرتبط
+            $table->foreignId('user_id')->constrained('users'); // معرف المستخدم المرتبط
             $table->string('phone')->nullable(); // رقم الهاتف (اختياري)
             $table->string('address')->nullable(); // العنوان (اختياري)
             $table->timestamps(); // تواريخ الإنشاء والتحديث
