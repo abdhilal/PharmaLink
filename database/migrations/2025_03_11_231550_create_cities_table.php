@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('cities', function (Blueprint $table) {
             $table->id(); // معرف المدينة
             $table->string('name'); // اسم المدينة
+            $table->timestamps(); // تاريخ الإنشاء والتحديث
         });
     }
 

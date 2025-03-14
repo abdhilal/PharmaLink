@@ -79,7 +79,8 @@
             text-decoration: underline;
         }
     </style>
-    
+        <link rel="stylesheet" href="{{ asset('assets/css/welcome.css') }}">
+
 </head>
 <body>
     <header>

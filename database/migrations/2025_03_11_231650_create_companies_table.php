@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('companies', function (Blueprint $table) {
             $table->id(); // معرف الشركة
             $table->string('name'); // اسم الشركة
+            $table->timestamps(); // تاريخ الإنشاء والتحديث 
         });
     }
 
