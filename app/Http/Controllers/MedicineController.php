@@ -9,6 +9,23 @@ use Illuminate\Support\Facades\Auth;
 class MedicineController extends Controller
 {
 
+  public function index(Request $request)
+  {
+      $warehouseId = $request->query('warehouse');
+      if (!$warehouseId) {
+          return redirect()->route('warehouses.index')->with('error', 'Please select a warehouse first.');
+      }
+
+      $medicines = Medicine::where('warehouse_id', $warehouseId)
+          ->with('company', 'warehouse')
+          ->orderBy('company_id')
+          ->orderBy('price')
+          ->get()
+          ->groupBy('company.name');
+
+      return view('medicines.index', compact('medicines', 'warehouseId'));
+}
+
   public function store(Request $request)
   {
       $request->validate([

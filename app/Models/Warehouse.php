@@ -22,4 +22,8 @@ class Warehouse extends Model
     {
         return $this->hasMany(Medicine::class);
     }
+    public function accounts()
+{
+    return $this->hasMany(Account::class, 'warehouse_id');
+}
 }

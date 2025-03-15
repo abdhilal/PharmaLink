@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable(); // تاريخ تأكيد البريد الإلكتروني
             $table->string('password'); // كلمة المرور
             $table->enum('role', ['pharmacy', 'warehouse']); // نوع المستخدم (صيدلية أو مستودع)
+            $table->foreignId('city_id')->nullable()->constrained('cities')->onDelete('set null'); // إضافة مدينة الصيدلية
             $table->rememberToken(); // رمز تذكر تسجيل الدخول
             $table->timestamps(); // تواريخ الإنشاء والتحديث
         });

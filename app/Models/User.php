@@ -50,5 +50,15 @@ class User extends Authenticatable
     {
         return $this->hasOne(Warehouse::class);
     }
+
+    public function accounts()
+{
+    return $this->hasMany(Account::class, 'pharmacy_id');
+}
+
+public function city()
+{
+    return $this->belongsTo(City::class);
+}
   
 }

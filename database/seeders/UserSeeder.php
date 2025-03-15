@@ -16,6 +16,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@admin.com',
             'password' => Hash::make('12345678'),
             'role' => 'pharmacy',
+            'city_id' => 1,
         ]);
 
         // إنشاء مستودع

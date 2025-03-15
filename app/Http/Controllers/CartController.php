@@ -12,6 +12,7 @@ class CartController extends Controller
     
 
     // إضافة دواء إلى السلة (تخزين مؤقت في الجلسة)
+
     public function addToCart(Request $request)
     {
         $request->validate([
@@ -38,90 +39,144 @@ class CartController extends Controller
 
         return redirect()->route('cart.show')->with('success', 'Medicine added to cart.');
     }
-
+    public function addMultiple(Request $request)
+    {
+      
+        $request->validate([
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'items' => 'required|array',
+            'items.*.medicine_id' => 'required|exists:medicines,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+    
+        $cart = session()->get('cart', []);
+    
+        foreach ($request->items as $item) {
+            $medicine = Medicine::findOrFail($item['medicine_id']);
+            if ($medicine->quantity < $item['quantity']) {
+                return back()->with('error', "Insufficient stock for {$medicine->name}.");
+            }
+    
+            $subtotal = $medicine->price * $item['quantity'];
+            if ($medicine->offer && str_contains($medicine->offer, '10% off on 10+ units') && $item['quantity'] >= 10) {
+                $subtotal *= 0.9;
+            }
+    
+            $cart[$request->warehouse_id][$medicine->id] = [
+                'medicine_id' => $medicine->id,
+                'quantity' => $item['quantity'],
+                'subtotal' => $subtotal,
+            ];
+        }
+    
+        session()->put('cart', $cart);
+        return redirect()->route('cart.show')->with('success', 'Medicines added to cart.');
+    }
     // عرض السلة
     public function show()
     {
         $cart = session()->get('cart', []);
         $invoices = [];
-
         foreach ($cart as $warehouseId => $items) {
-            $subtotal = 0;
-            foreach ($items as $medicineId => $details) {
-                $medicine = Medicine::find($medicineId);
-                $quantity = $details['quantity'];
-                $price = $details['price'];
-                $offer = $details['offer'];
-
-                // تطبيق العرض إذا وجد
-                $itemTotal = $price * $quantity;
-                if ($offer && str_contains($offer, '10% off on 10+ units') && $quantity >= 10) {
-                    $itemTotal *= 0.9; // خصم 10%
-                }
-
-                $subtotal += $itemTotal;
-                $invoices[$warehouseId]['items'][] = [
+          
+            $total = 0;
+            $invoiceItems = [];
+    
+            foreach ($items as $item) {
+              
+                $medicine = Medicine::find($item['medicine_id']);
+                $subtotal = $item['subtotal'];
+                // استخدام price_per_unit إذا كان موجودًا، وإلا استخدام السعر من Medicine
+                $pricePerUnit = $item['price_per_unit'] ?? $medicine->price;
+    
+                $invoiceItems[] = [
                     'medicine' => $medicine,
-                    'quantity' => $quantity,
-                    'subtotal' => $itemTotal,
+                    'quantity' => $item['quantity'],
+                    'price_per_unit' => $pricePerUnit,
+                    'subtotal' => $subtotal,
                 ];
+                $total += $subtotal;
             }
-            $invoices[$warehouseId]['total'] = $subtotal;
-        }
 
+    
+            $invoices[$warehouseId] = [
+                'items' => $invoiceItems,
+                'total' => $total,
+            ];
+        }
+    
         return view('cart.show', compact('invoices'));
     }
 
     // إرسال الطلبيات
-    public function checkout()
+    public function checkout(Request $request)
     {
         $cart = session()->get('cart', []);
         if (empty($cart)) {
-            return back()->with('error', 'Cart is empty.');
+            return back()->with('error', 'Your cart is empty.');
         }
-
-        DB::transaction(function () use ($cart) {
-            foreach ($cart as $warehouseId => $items) {
-                $total = 0;
-                $order = Order::create([
-                    'pharmacy_id' => auth()->user()->id,
-                    'warehouse_id' => $warehouseId,
-                    'total_price' => 0, // سيتم تحديثه لاحقًا
+    
+        foreach ($cart as $warehouseId => $items) {
+            $order = Order::create([
+                'pharmacy_id' => auth()->user()->id,
+                'warehouse_id' => $warehouseId,
+                'status' => 'pending',
+                'total_price' => array_sum(array_column($items, 'subtotal')),
+            ]);
+    
+            foreach ($items as $item) {
+                $medicine = Medicine::findOrFail($item['medicine_id']); // جلب الدواء
+                $pricePerUnit = $item['price_per_unit'] ?? $medicine->price; // استخدام السعر من Medicine إذا لم يكن موجودًا
+    
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'medicine_id' => $item['medicine_id'],
+                    'quantity' => $item['quantity'],
+                    'price_per_unit' => $pricePerUnit,
+                    'subtotal' => $item['subtotal'],
                 ]);
-
-                foreach ($items as $medicineId => $details) {
-                    $medicine = Medicine::find($medicineId);
-                    $quantity = $details['quantity'];
-                    $price = $details['price'];
-                    $offer = $details['offer'];
-
-                    $subtotal = $price * $quantity;
-                    if ($offer && str_contains($offer, '10% off on 10+ units') && $quantity >= 10) {
-                        $subtotal *= 0.9;
-                    }
-
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'medicine_id' => $medicineId,
-                        'quantity' => $quantity,
-                        'price_per_unit' => $price,
-                        'subtotal' => $subtotal,
-                    ]);
-
-                    // تحديث الكمية في المستودع
-                    $medicine->quantity -= $quantity;
-                    $medicine->save();
-
-                    $total += $subtotal;
-                }
-
-                $order->total_price = $total;
-                $order->save();
             }
-
-            session()->forget('cart');
-        });
-
-        return redirect()->route('orders.index')->with('success', 'Orders placed successfully.');
+    
+           
+        }
+    
+        session()->forget('cart');
+        return redirect()->route('orders.index')->with('success', 'Order placed successfully.');
     }
+
+
+    public function update(Request $request)
+{
+    $request->validate([
+        'medicine_id' => 'required|exists:medicines,id',
+        'warehouse_id' => 'required|exists:warehouses,id',
+        'quantity' => 'required|integer|min:1',
+    ]);
+
+    $cart = session()->get('cart', []);
+    $medicine = Medicine::findOrFail($request->medicine_id);
+    if ($medicine->quantity < $request->quantity) {
+        return back()->with('error', 'Insufficient stock.');
+    }
+
+    $cart[$request->warehouse_id][$request->medicine_id]['quantity'] = $request->quantity;
+    session()->put('cart', $cart);
+    return back()->with('success', 'Cart updated.');
+}
+
+public function remove(Request $request)
+{
+    $request->validate([
+        'medicine_id' => 'required|exists:medicines,id',
+        'warehouse_id' => 'required|exists:warehouses,id',
+    ]);
+
+    $cart = session()->get('cart', []);
+    unset($cart[$request->warehouse_id][$request->medicine_id]);
+    if (empty($cart[$request->warehouse_id])) {
+        unset($cart[$request->warehouse_id]);
+    }
+    session()->put('cart', $cart);
+    return back()->with('success', 'Item removed from cart.');
+}
 }
