@@ -54,17 +54,18 @@ class PaymentController extends Controller
             $account->save(); 
         });
 
+
         return back()->with('success', 'Debt recorded successfully.');
     }
 
     // تسجيل دفع من الصيدلية إلى المستودع
     public function makePayment(Request $request)
     {
+
         $request->validate([
             'order_id' => 'required|exists:orders,id',
             'amount' => 'required|numeric|min:0.01',
         ]);
-
         $order = Order::findOrFail($request->order_id);
         $this->authorizeOrder($order);
 

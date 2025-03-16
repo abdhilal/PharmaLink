@@ -13,32 +13,7 @@ class CartController extends Controller
 
     // إضافة دواء إلى السلة (تخزين مؤقت في الجلسة)
 
-    public function addToCart(Request $request)
-    {
-        $request->validate([
-            'medicine_id' => 'required|exists:medicines,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
-
-        $medicine = Medicine::findOrFail($request->medicine_id);
-        if ($medicine->quantity < $request->quantity) {
-            return back()->with('error', 'Insufficient stock.');
-        }
-
-        $cart = session()->get('cart', []);
-        $warehouseId = $medicine->warehouse_id;
-
-        // إضافة الدواء إلى السلة تحت المستودع الخاص به
-        $cart[$warehouseId][$medicine->id] = [
-            'quantity' => $request->quantity,
-            'price' => $medicine->price,
-            'offer' => $medicine->offer,
-        ];
-
-        session()->put('cart', $cart);
-
-        return redirect()->route('cart.show')->with('success', 'Medicine added to cart.');
-    }
+   
     public function addMultiple(Request $request)
     {
       
@@ -77,6 +52,7 @@ class CartController extends Controller
     {
         $cart = session()->get('cart', []);
         $invoices = [];
+        
         foreach ($cart as $warehouseId => $items) {
           
             $total = 0;
@@ -146,23 +122,46 @@ class CartController extends Controller
 
 
     public function update(Request $request)
-{
-    $request->validate([
-        'medicine_id' => 'required|exists:medicines,id',
-        'warehouse_id' => 'required|exists:warehouses,id',
-        'quantity' => 'required|integer|min:1',
-    ]);
-
-    $cart = session()->get('cart', []);
-    $medicine = Medicine::findOrFail($request->medicine_id);
-    if ($medicine->quantity < $request->quantity) {
-        return back()->with('error', 'Insufficient stock.');
+    {
+        $request->validate([
+            'medicine_id' => 'required|exists:medicines,id',
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+    
+        $cart = session()->get('cart', []);
+        $medicine = Medicine::findOrFail($request->medicine_id);
+    
+        // التحقق من المخزون
+        if ($medicine->quantity < $request->quantity) {
+            return back()->with('error', "Insufficient stock for {$medicine->name}.");
+        }
+    
+        // جلب العنصر من السلة
+        if (!isset($cart[$request->warehouse_id][$request->medicine_id])) {
+            return back()->with('error', 'Item not found in cart.');
+        }
+    
+        // حساب السعر الجديد
+        $pricePerUnit = $cart[$request->warehouse_id][$request->medicine_id]['price_per_unit'] ?? $medicine->price;
+        $subtotal = $pricePerUnit * $request->quantity;
+    
+        // تطبيق العروض إذا وجدت
+        if ($medicine->offer && str_contains($medicine->offer, '10% off on 10+ units') && $request->quantity >= 10) {
+            $subtotal *= 0.9;
+        }
+    
+        // تحديث العنصر في السلة
+        $cart[$request->warehouse_id][$request->medicine_id] = [
+            'medicine_id' => $request->medicine_id,
+            'quantity' => $request->quantity,
+            'price_per_unit' => $pricePerUnit,
+            'subtotal' => $subtotal,
+        ];
+    
+        session()->put('cart', $cart);
+        return back()->with('success', 'Cart updated successfully.');
     }
-
-    $cart[$request->warehouse_id][$request->medicine_id]['quantity'] = $request->quantity;
-    session()->put('cart', $cart);
-    return back()->with('success', 'Cart updated.');
-}
 
 public function remove(Request $request)
 {
@@ -179,4 +178,5 @@ public function remove(Request $request)
     session()->put('cart', $cart);
     return back()->with('success', 'Item removed from cart.');
 }
+
 }

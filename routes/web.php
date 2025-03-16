@@ -5,6 +5,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PaymentController;
 
+use App\Http\Controllers\WarehouseMedicineController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,7 +25,6 @@ Route::middleware('auth')->group(function () {
 
 // راوتات السلة
 Route::middleware('auth')->group(function () {
-    Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
     Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
@@ -53,8 +53,14 @@ Route::get('/payments', App\Http\Controllers\PaymentController::class)->name('pa
 //عرض المستودعات حسب المدينة
 Route::get('/warehouses', [App\Http\Controllers\WarehouseController::class, 'index'])->name('warehouses.index');
 
-
-
+Route::middleware('auth')->prefix('warehouse')->group(function () {
+  // عرض الأدوية
+  Route::get('/medicines', [WarehouseMedicineController::class, 'index'])->name('warehouse.medicines.index');
+  // صفحة إضافة دواء
+  Route::get('/medicines/create', [WarehouseMedicineController::class, 'create'])->name('warehouse.medicines.create');
+  // تخزين الدواء
+  Route::post('/medicines', [WarehouseMedicineController::class, 'store'])->name('warehouse.medicines.store');
+});
 
 
 

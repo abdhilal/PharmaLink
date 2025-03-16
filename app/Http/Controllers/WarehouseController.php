@@ -13,6 +13,6 @@ class WarehouseController extends Controller
         $warehouses = Warehouse::whereHas('cities', function ($query) {
             $query->where('city_id', auth()->user()->city_id);
         })->get();
-        return view('warehouses.index', compact('warehouses'));
+        return view('warehouse.index', compact('warehouses'));
     }
 }
