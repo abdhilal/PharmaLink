@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id(); // معرف الطلب
             $table->foreignId('pharmacy_id')->constrained('users')->onDelete('cascade'); // معرف الصيدلية
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('cascade'); // معرف المستودع
-            $table->enum('status', ['pending', 'ready', 'delivered'])->default('pending'); // حالة الطلب (معلق، جاهز، تم التوصيل)
+            $table->enum('status', ['pending', 'ready', 'delivered','cancelled'])->default('pending'); // حالة الطلب (معلق، جاهز، تم التوصيل)
             $table->decimal('total_price', 8, 2); // السعر الإجمالي
             $table->timestamps(); // تواريخ الإنشاء والتحديث
         });

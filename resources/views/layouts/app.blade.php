@@ -25,7 +25,15 @@
                 <a href="{{ route('medicines.index') }}">Medicines</a>
                 <a href="{{ route('cart.show') }}">Cart</a>
                 <a href="{{ route('orders.index') }}">Orders</a>
-                <a href="{{ route('payments.index') }}">Payments</a>
+                @if (Auth::user()->warehouse)
+                <a href="{{ route('warehouse.payments') }}">Payments</a>
+
+                @else
+                <a href="{{ route('pharmacy.balance') }}">Payments</a>
+
+                @endif
+
+
                 <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf

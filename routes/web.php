@@ -4,17 +4,16 @@ use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PaymentController;
-
+use App\Http\Controllers\PharmacyController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\WarehouseMedicineController;
+use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -44,29 +43,69 @@ Route::get('/', function () {
 
 //واجه قائمة الادوية
 Route::get('/medicines', [MedicineController::class, 'index'])->name('medicines.index')->middleware('auth');
-//واجهة الطلبيات 
+//واجهة الطلبيات
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 Route::patch('/orders/{order}', [OrderController::class, 'updateStatus'])->name('orders.update');
 
-//واجهة الحسابات والمدفوعات
-Route::get('/payments', App\Http\Controllers\PaymentController::class)->name('payments.index');
+
 //عرض المستودعات حسب المدينة
 Route::get('/warehouses', [App\Http\Controllers\WarehouseController::class, 'index'])->name('warehouses.index');
 
+    Route::middleware('auth')->prefix('warehouse')->group(function () {
+        // عرض قائمة الأدوية
+        Route::get('/medicines', [WarehouseMedicineController::class, 'index'])->name('warehouse.medicines.index');
+
+        // عرض صفحة إضافة دواء
+        Route::get('/medicines/create', [WarehouseMedicineController::class, 'create'])->name('warehouse.medicines.create');
+
+        // حفظ دواء جديد
+        Route::post('/medicines', [WarehouseMedicineController::class, 'store'])->name('warehouse.medicines.store');
+
+        // عرض صفحة تعديل دواء
+        Route::get('/medicines/{medicine}/edit', [WarehouseMedicineController::class, 'edit'])->name('warehouse.medicines.edit');
+
+        // تحديث بيانات الدواء
+        Route::patch('/medicines/{medicine}', [WarehouseMedicineController::class, 'update'])->name('warehouse.medicines.update');
+
+        // حذف الدواء
+        Route::delete('/medicines/{medicine}', [WarehouseMedicineController::class, 'destroy'])->name('warehouse.medicines.destroy');
+    });
+
+
+
 Route::middleware('auth')->prefix('warehouse')->group(function () {
-  // عرض الأدوية
-  Route::get('/medicines', [WarehouseMedicineController::class, 'index'])->name('warehouse.medicines.index');
-  // صفحة إضافة دواء
-  Route::get('/medicines/create', [WarehouseMedicineController::class, 'create'])->name('warehouse.medicines.create');
-  // تخزين الدواء
-  Route::post('/medicines', [WarehouseMedicineController::class, 'store'])->name('warehouse.medicines.store');
+    Route::get('/dashboard', [WarehouseController::class, 'dashboard'])->name('warehouse.dashboard');
+    Route::get('/medicines', [WarehouseMedicineController::class, 'index'])->name('warehouse.medicines.index');
+    Route::get('/medicines/create', [WarehouseMedicineController::class, 'create'])->name('warehouse.medicines.create');
+    Route::get('/payments', [PaymentController::class, 'index'])->name('warehouse.payments');
+    Route::post('/payments/make', [PaymentController::class, 'makePayment'])->name('warehouse.payments.make');
+    Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('pharmacies.index');
+    Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('pharmacies.show');
+
+    Route::get('/settings/account', [SettingsController::class, 'account'])->name('warehouse.settings.account');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('warehouse.notifications');
+    Route::get('/reports', [ReportController::class, 'index'])->name('warehouse.reports');
+    Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('warehouse.settings.cities');
+    Route::patch('/settings/cities', [SettingsController::class, 'updateCities'])->name('warehouse.settings.updateCities');
+
 });
 
 
+Route::middleware('auth')->prefix('warehouse')->group(function () {
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
+    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+});
 
 
-
-
+// للصيدلي
+Route::prefix('pharmacy')->group(function () {
+    Route::get('/balance', [PaymentController::class, 'pharmacyBalance'])->name('pharmacy.balance');
+});
 
 
 

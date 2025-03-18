@@ -50,18 +50,6 @@
                 @error('offer') <span class="error">{{ $message }}</span> @enderror
             </div>
 
-            <!-- اختيار المدن التي يخدمها المستودع -->
-            <div class="form-group">
-                <label>المدن التي يخدمها المستودع:</label>
-                @foreach($cities as $city) <!-- حلقة لعرض المدن -->
-                    <label>
-                        <input type="checkbox" name="cities[]" value="{{ $city->id }}"
-                            {{ in_array($city->id, old('cities', [])) ? 'checked' : '' }}> {{ $city->name }}
-                    </label>
-                @endforeach
-                @error('cities') <span class="error">{{ $message }}</span> @enderror
-            </div>
-
             <!-- زر الإرسال -->
             <button type="submit" class="btn">إضافة الدواء</button>
         </form>

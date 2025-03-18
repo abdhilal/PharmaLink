@@ -1,61 +1,95 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\City;
 use App\Models\Medicine;
 use App\Models\Company;
-use App\Models\Warehouse;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 
 class WarehouseMedicineController extends Controller
 {
- 
 
-    // دالة لعرض قائمة الأدوية الخاصة بالمستودع
+
+    // عرض قائمة الأدوية
     public function index()
     {
-        $warehouse = auth()->user()->warehouse; // جلب المستودع المرتبط بالمستخدم الحالي
-        $medicines = $warehouse->medicines()->with('company')->get(); // جلب الأدوية مع بيانات الشركة
-        return view('warehouse.medicines.index', compact('medicines', 'warehouse')); // عرض الواجهة مع البيانات
+        $warehouse = auth()->user()->warehouse;
+        $medicines = Medicine::where('warehouse_id', $warehouse->id)->with('company')->get();
+        return view('warehouse.medicines.index', compact('medicines'));
     }
 
-    // دالة لعرض صفحة إضافة دواء جديد
+    // عرض صفحة إضافة دواء
     public function create()
     {
-        $companies = Company::all(); // جلب جميع الشركات لاختيار واحدة
-        $cities = City::all(); // جلب جميع المدن لتحديد المدن التي يخدمها المستودع
-        return view('warehouse.medicines.create', compact('companies', 'cities')); // عرض صفحة الإضافة
+        $companies = Company::all();
+        return view('warehouse.medicines.create', compact('companies'));
     }
 
-    // دالة لتخزين دواء جديد في قاعدة البيانات
+    // حفظ دواء جديد
     public function store(Request $request)
     {
-        // التحقق من صحة البيانات المدخلة
         $request->validate([
-            'name' => 'required|string|max:255', // اسم الدواء مطلوب ولا يزيد عن 255 حرف
-            'company_id' => 'required|exists:companies,id', // معرف الشركة مطلوب ويجب أن يكون موجودًا
-            'price' => 'required|numeric|min:0', // السعر مطلوب ويجب أن يكون رقمًا موجبًا
-            'quantity' => 'required|integer|min:0', // الكمية مطلوبة ويجب أن تكون عددًا صحيحًا موجبًا
-            'offer' => 'nullable|string|max:255', // العرض اختياري ولا يزيد عن 255 حرف
-            'cities' => 'required|array', // قائمة المدن مطلوبة ويجب أن تكون مصفوفة
-            'cities.*' => 'exists:cities,id', // كل مدينة يجب أن تكون موجودة في جدول المدن
+            'name' => 'required|string|max:255',
+            'company_id' => 'required|exists:companies,id',
+            'price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:0',
+            'offer' => 'nullable|string|max:255',
         ]);
 
-        $warehouse = auth()->user()->warehouse; // جلب المستودع المرتبط بالمستخدم الحالي
+        $warehouse = auth()->user()->warehouse;
 
-        // إنشاء دواء جديد في جدول medicines
-        $medicine = Medicine::create([
+        Medicine::create([
             'name' => $request->name,
             'company_id' => $request->company_id,
-            'warehouse_id' => $warehouse->id, // ربط الدواء بالمستودع
+            'warehouse_id' => $warehouse->id,
             'price' => $request->price,
             'quantity' => $request->quantity,
             'offer' => $request->offer,
         ]);
 
-        // تحديث المدن التي يخدمها المستودع في جدول warehouse_cities
-        $warehouse->cities()->sync($request->cities); // استخدام sync لتحديث المدن دون تكرار
-
         return redirect()->route('warehouse.medicines.index')->with('success', 'تم إضافة الدواء بنجاح.');
+    }
+
+    // عرض صفحة تعديل دواء
+    public function edit(Medicine $medicine)
+    {
+
+
+        $companies = Company::all();
+        return view('warehouse.medicines.edit', compact('medicine', 'companies'));
+    }
+
+    // تحديث بيانات الدواء
+    public function update(Request $request, Medicine $medicine)
+    {
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'company_id' => 'required|exists:companies,id',
+            'price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:0',
+            'offer' => 'nullable|string|max:255',
+        ]);
+
+        $medicine->update([
+            'name' => $request->name,
+            'company_id' => $request->company_id,
+            'price' => $request->price,
+            'quantity' => $request->quantity,
+            'offer' => $request->offer,
+        ]);
+
+        return redirect()->route('warehouse.medicines.index')->with('success', 'تم تعديل الدواء بنجاح.');
+    }
+
+    // حذف الدواء
+    public function destroy(Medicine $medicine)
+    {
+        if ($medicine->warehouse_id !== auth()->user()->warehouse->id) {
+            return back()->with('error', 'عملية غير مصرح بها.');
+        }
+
+        $medicine->delete();
+        return back()->with('success', 'تم حذف الدواء بنجاح.');
     }
 }

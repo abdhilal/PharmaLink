@@ -1,38 +1,46 @@
-@extends('layouts.app') <!-- استخدام القالب الأساسي -->
-
-@section('title', 'أدوية المستودع') <!-- عنوان الصفحة -->
-
+@extends('layouts.app')
+@section('title', 'الأدوية')
 @section('content')
     <div class="content">
-        <!-- عنوان رئيسي للصفحة -->
-        <h1>أدوية المستودع #{{ $warehouse->id }}</h1>
-
-        <!-- زر للانتقال إلى صفحة إضافة دواء جديد -->
-        <a href="{{ route('warehouse.medicines.create') }}" class="btn">إضافة دواء جديد</a>
-
-        <!-- جدول لعرض الأدوية -->
-        <table>
+        <h1>الأدوية</h1>
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+        <a href="{{ route('warehouse.medicines.create') }}" class="btn btn-primary">إضافة دواء جديد</a>
+        <table class="table">
             <thead>
                 <tr>
-                    <th>اسم الدواء</th>
+                    <th>الاسم</th>
                     <th>الشركة</th>
                     <th>السعر</th>
-                    <th>الكمية المتاحة</th>
-                    <th>العروض</th>
+                    <th>الكمية</th>
+                    <th>العرض</th>
+                    <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($medicines as $medicine) <!-- حلقة لعرض كل دواء -->
+                @forelse($medicines as $medicine)
                     <tr>
-                        <td>{{ $medicine->name }}</td> <!-- اسم الدواء -->
-                        <td>{{ $medicine->company->name }}</td> <!-- اسم الشركة -->
-                        <td>{{ number_format($medicine->price, 2) }} ريال</td> <!-- السعر بصيغة منسقة -->
-                        <td>{{ $medicine->quantity }}</td> <!-- الكمية المتاحة -->
-                        <td>{{ $medicine->offer ?? 'لا يوجد' }}</td> <!-- العرض إن وجد -->
+                        <td>{{ $medicine->name }}</td>
+                        <td>{{ $medicine->company->name }}</td>
+                        <td>{{ number_format($medicine->price, 2) }} ريال</td>
+                        <td>{{ $medicine->quantity }}</td>
+                        <td>{{ $medicine->offer ?? 'لا يوجد' }}</td>
+                        <td>
+                            <a href="{{ route('warehouse.medicines.edit', $medicine) }}" class="btn btn-primary">تعديل</a>
+                            <form action="{{ route('warehouse.medicines.destroy', $medicine) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</button>
+                            </form>
+                        </td>
                     </tr>
-                @empty <!-- إذا لم يكن هناك أدوية -->
+                @empty
                     <tr>
-                        <td colspan="5">لا توجد أدوية مسجلة.</td>
+                        <td colspan="6">لا توجد أدوية</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -41,11 +49,13 @@
 @endsection
 
 <style>
-    /* تنسيق بسيط لتحسين المظهر */
-    .content { padding: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .table { width: 100%; border-collapse: collapse; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     th { background-color: #f2f2f2; }
-    .btn { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-    .btn:hover { background-color: #0056b3; }
+    .btn { padding: 5px 10px; color: white; text-decoration: none; border-radius: 5px; margin: 0 5px; }
+    .btn-primary { background-color: #007bff; }
+    .btn-danger { background-color: #dc3545; }
+    .alert { padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+    .alert-success { background-color: #d4edda; color: #155724; }
+    .alert-danger { background-color: #f8d7da; color: #721c24; }
 </style>

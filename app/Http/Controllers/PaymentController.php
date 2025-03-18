@@ -5,34 +5,30 @@ use App\Models\Order;
 use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    
-
-  public function __invoke(Request $request)
-  {
-      $user = auth()->user();
-      if ($user->role === 'pharmacy') {
-          $accounts = Account::where('pharmacy_id', $user->id)->with('transactions')->get();
-      } else {
-          $accounts = Account::where('warehouse_id', $user->warehouse->id)->with('transactions')->get();
-      }
-      return view('payments.index', compact('accounts'));
-  }
 
 
+    // عرض صفحة المدفوعات (للمستودع فقط)
+    public function index()
+    {
+        $warehouse = Auth::user()->warehouse;
+        $accounts = Account::where('warehouse_id', $warehouse->id)->with('transactions', 'pharmacy')->get();
+        return view('warehouse.payments.index', compact('accounts'));
+    }
 
     // تسجيل دين عند تسليم الطلبية
     public function recordDebt(Order $order)
     {
-
-      
-        $this->authorizeOrder($order);
+        if (Auth::user()->role !== 'warehouse' || Auth::user()->warehouse->id !== $order->warehouse_id) {
+            return back()->with('error', 'عملية غير مصرح بها.');
+        }
 
         if ($order->status !== 'delivered') {
-            return back()->with('error', 'Order must be delivered to record debt.');
+            return back()->with('error', 'الطلبية يجب أن تكون مسلمة لتسجيل الدين.');
         }
 
         DB::transaction(function () use ($order) {
@@ -51,57 +47,49 @@ class PaymentController extends Controller
 
             // تحديث الرصيد (الدين يزيد الرصيد المستحق)
             $account->balance += $order->total_price;
-            $account->save(); 
+            $account->save();
         });
 
-
-        return back()->with('success', 'Debt recorded successfully.');
+        return back()->with('success', 'تم تسجيل الدين بنجاح.');
     }
 
-    // تسجيل دفع من الصيدلية إلى المستودع
+    // تسجيل دفع يدوي من الصيدلية إلى المستودع (للمستودع فقط)
     public function makePayment(Request $request)
     {
-
         $request->validate([
-            'order_id' => 'required|exists:orders,id',
+            'account_id' => 'required|exists:accounts,id',
             'amount' => 'required|numeric|min:0.01',
         ]);
-        $order = Order::findOrFail($request->order_id);
-        $this->authorizeOrder($order);
 
-        $account = Account::where('pharmacy_id', $order->pharmacy_id)
-                         ->where('warehouse_id', $order->warehouse_id)
-                         ->firstOrFail();
-
-        if ($request->amount > $account->balance) {
-            return back()->with('error', 'Payment amount exceeds outstanding balance.');
+        $account = Account::findOrFail($request->account_id);
+        if (Auth::user()->warehouse->id !== $account->warehouse_id) {
+            return back()->with('error', 'عملية غير مصرح بها.');
         }
 
-        DB::transaction(function () use ($account, $order, $request) {
+        DB::transaction(function () use ($account, $request) {
             // تسجيل الدفع
             Transaction::create([
                 'account_id' => $account->id,
-                'order_id' => $order->id,
                 'amount' => $request->amount,
                 'type' => 'payment',
             ]);
 
-            // تحديث الرصيد (الدفع يقلل الرصيد المستحق)
+            // تحديث الرصيد (الدفع يقلل الرصيد المستحق، وقد يصبح سالبًا)
             $account->balance -= $request->amount;
             $account->save();
         });
 
-        return back()->with('success', 'Payment recorded successfully.');
+        return back()->with('success', 'تم تسجيل الدفعة بنجاح.');
     }
 
-    // التحقق من صلاحية المستخدم
-    private function authorizeOrder(Order $order)
+    public function pharmacyBalance()
     {
-        if (auth()->user()->role === 'pharmacy' && auth()->id() !== $order->pharmacy_id) {
-            abort(403, 'Unauthorized action.');
+        if (Auth::user()->role !== 'pharmacy') {
+            abort(403, 'فقط الصيدليات يمكنها الوصول.');
         }
-        if (auth()->user()->role === 'warehouse' && auth()->user()->warehouse->id !== $order->warehouse_id) {
-            abort(403, 'Unauthorized action.');
-        }
+
+        $pharmacyId = Auth::user()->id;
+        $accounts = Account::where('pharmacy_id', $pharmacyId)->with('transactions', 'warehouse')->get();
+        return view('pharmacy.payments.index', compact('accounts'));
     }
 }
