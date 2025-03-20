@@ -18,7 +18,12 @@ return new class extends Migration
             $table->string('name'); // اسم الدواء
             $table->decimal('price', 8, 2); // سعر الدواء
             $table->integer('quantity'); // الكمية المتوفرة
+            $table->date('date')->nullable(); // تاريخ انتهاء الصلاحية
+            $table->string('barcode')->unique()->nullable(); // الباركود (فريد)
             $table->string('offer')->nullable(); // العرض الخاص (اختياري)
+            $table->decimal('discount_percentage', 5, 2)->nullable(); // نسبة الحسم
+            $table->decimal('profit_percentage', 5, 2)->nullable(); // نسبة الربح
+            $table->decimal('selling_price', 8, 2)->nullable(); // سعر البيع
             $table->timestamps(); // تواريخ الإنشاء والتحديث
         });
     }

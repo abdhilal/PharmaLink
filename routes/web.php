@@ -73,6 +73,7 @@ Route::get('/warehouses', [App\Http\Controllers\WarehouseController::class, 'ind
 
 
 
+
 Route::middleware('auth')->prefix('warehouse')->group(function () {
     Route::get('/dashboard', [WarehouseController::class, 'dashboard'])->name('warehouse.dashboard');
     Route::get('/medicines', [WarehouseMedicineController::class, 'index'])->name('warehouse.medicines.index');
@@ -112,7 +113,10 @@ Route::prefix('pharmacy')->group(function () {
 
 
 
+use App\Http\Controllers\SupplyOrderController;
 
+Route::get('/supply_orders/create', [SupplyOrderController::class, 'create'])->name('supply_orders.create');
+Route::post('/supply_orders', [SupplyOrderController::class, 'store'])->name('supply_orders.store');
 
 
 

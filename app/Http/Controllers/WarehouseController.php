@@ -20,33 +20,54 @@ class WarehouseController extends Controller
         })->get();
         return view('warehouse.index', compact('warehouses'));
     }
+    public function dashboard()
+    {
+        $warehouse = auth()->user()->warehouse;
 
-
-
-
-
-        public function dashboard()
-        {
-            $warehouse = auth()->user()->warehouse;
-
-            if (!$warehouse) {
-                abort(404, 'لا يوجد مستودع مرتبط بهذا الحساب.');
-            }
-
-            // إحصائيات الطلبيات
-            $pendingOrders = Order::where('warehouse_id', $warehouse->id)->where('status', 'pending')->count();
-            $deliveredOrders = Order::where('warehouse_id', $warehouse->id)->where('status', 'delivered')->count();
-            $totalSales = Order::where('warehouse_id', $warehouse->id)->where('status', 'delivered')->sum('total_price') ?? 0;
-            $latestOrders = Order::where('warehouse_id', $warehouse->id)->latest()->take(5)->get();
-
-            // إحصائيات الحسابات
-            $pharmaciesCount = Account::where('warehouse_id', $warehouse->id)->count();
-            $totalDebt = Account::where('warehouse_id', $warehouse->id)->sum('balance') ?? 0;
-
-            return view('dashboard', compact(
-                'warehouse', 'pendingOrders', 'deliveredOrders', 'totalSales', 'latestOrders',
-                'pharmaciesCount', 'totalDebt'
-            ));
+        if (!$warehouse) {
+            abort(404, 'لا يوجد مستودع مرتبط بهذا الحساب.');
         }
 
+        $warehouse->load([
+            'orders' => function ($query) {
+                $query->latest()->take(5);
+            },
+            'accounts',
+            'medicines'
+        ]);
+
+        $orders = Order::where('warehouse_id', $warehouse->id)
+                       ->selectRaw("
+                           COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders,
+                           COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered_orders,
+                           SUM(CASE WHEN status = 'delivered' THEN total_price ELSE 0 END) as total_sales
+                       ")
+                       ->first();
+
+        $pendingOrders = $orders->pending_orders ?? 0;
+        $deliveredOrders = $orders->delivered_orders ?? 0;
+        $totalSales = $orders->total_sales ?? 0;
+        $latestOrders = $warehouse->orders;
+
+        $pharmaciesCount = $warehouse->accounts->count();
+        $totalDebt = $warehouse->accounts->sum('balance') ?? 0; // إجمالي الديون
+
+        $capital = $warehouse->medicines->sum(function ($medicine) {
+            return $medicine->quantity * $medicine->price;
+        });
+
+        $expiringMedicines = $warehouse->medicines->filter(function ($medicine) {
+            return $medicine->date && $medicine->date <= now()->addMonth();
+        })->take(5);
+
+        $lowStockMedicines = $warehouse->medicines->filter(function ($medicine) {
+            return $medicine->quantity <= 10;
+        })->take(5); // الأدوية منخفضة الكمية
+      
+
+        return view('dashboard', compact(
+            'warehouse', 'pendingOrders', 'deliveredOrders', 'totalSales', 'latestOrders',
+            'pharmaciesCount', 'totalDebt', 'capital', 'expiringMedicines', 'lowStockMedicines'
+        ));
+    }
 }

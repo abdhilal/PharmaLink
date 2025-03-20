@@ -73,6 +73,11 @@
                 </li>
                 <li class="menu-item">
                     <a href="{{ route('warehouse.medicines.create') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Add Medicine">إضافة دواء يدوي </div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ route('warehouse.medicines.create') }}" class="menu-link">
                         <div class="text-truncate" data-i18n="Add Medicine">إضافة دواء</div>
                     </a>
                 </li>

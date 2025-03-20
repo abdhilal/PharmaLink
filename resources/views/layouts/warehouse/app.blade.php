@@ -37,6 +37,7 @@
     <!-- Helpers -->
     <script src="{{ asset('warehouse/vendor/js/helpers.js') }}"></script>
     <script src="{{ asset('warehouse/js/config.js') }}"></script>
+
   </head>
   <body>
 
@@ -58,6 +59,7 @@
                     <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         @yield('content')
+                        @yield('scripts')
                     </div>
                     <!-- / Content -->
 
