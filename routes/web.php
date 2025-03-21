@@ -6,8 +6,13 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PharmacyController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SupplierPaymentController;
+use App\Http\Controllers\SupplyOrderController;
+
 use App\Http\Controllers\WarehouseMedicineController;
 use App\Http\Controllers\WarehouseController;
+use App\Models\SupplierPayment;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -88,6 +93,16 @@ Route::middleware('auth')->prefix('warehouse')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('warehouse.reports');
     Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('warehouse.settings.cities');
     Route::patch('/settings/cities', [SettingsController::class, 'updateCities'])->name('warehouse.settings.updateCities');
+    //الموردين
+Route::get('/suppliers', [SupplierController::class, 'index'])->name('warehouse.suppliers.index');
+Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('warehouse.suppliers.create');
+Route::get('/suppliers/{id}', [SupplierController::class, 'show'])->name('warehouse.suppliers.show');
+Route::get('/suppliers/{id}/edit', [SupplierController::class, 'edit'])->name('warehouse.suppliers.edit');
+Route::put('/suppliers/{id}', [SupplierController::class, 'update'])->name('warehouse.suppliers.update');
+Route::post('/suppliers', [SupplierController::class, 'store'])->name('warehouse.suppliers.store');
+Route::post('/suppliers/{supplier}/payments', [SupplierPaymentController::class, 'store'])->name('warehouse.supplier_payments.store');
+Route::get('/suppliers/{supplier}/order', [SupplyOrderController::class, 'show'])->name('warehouse.supplier_order.show');
+
 
 });
 
@@ -111,12 +126,6 @@ Route::prefix('pharmacy')->group(function () {
 
 
 
-
-
-use App\Http\Controllers\SupplyOrderController;
-
-Route::get('/supply_orders/create', [SupplyOrderController::class, 'create'])->name('supply_orders.create');
-Route::post('/supply_orders', [SupplyOrderController::class, 'store'])->name('supply_orders.store');
 
 
 

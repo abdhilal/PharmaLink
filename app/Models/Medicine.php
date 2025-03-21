@@ -34,4 +34,10 @@ class Medicine extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function supplyOrderItems()
+{
+    return $this->hasMany(SupplyOrderItem::class);
+}
+
 }

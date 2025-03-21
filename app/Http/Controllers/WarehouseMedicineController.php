@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Medicine;
 use App\Models\Company;
 use App\Models\Supplier;
+use App\Models\SupplierPayment;
+use App\Models\SupplyOrder;
+use App\Models\SupplyOrderItem;
 use Illuminate\Http\Request;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
@@ -37,7 +40,7 @@ class WarehouseMedicineController extends Controller
         // جلب الأدوية بدون تكرار الاسم مع الاحتفاظ بالمعلومات الأخرى
         $medicines = Medicine::where('warehouse_id', $warehouse->id)
             ->with('company')
-            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer','discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id')
+            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer', 'discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id')
             ->get();
 
         $suppliers = Supplier::all();
@@ -55,7 +58,7 @@ class WarehouseMedicineController extends Controller
     {
         $warehouse = auth()->user()->warehouse;
 
-        // التحقق من صحة البيانات قبل أي عمليات
+        // التحقق من صحة البيانات
         $request->validate([
             'items' => 'required|array',
             'items.*.name' => 'required|string|max:255',
@@ -66,6 +69,26 @@ class WarehouseMedicineController extends Controller
             'items.*.barcode' => 'nullable|string|max:50',
             'items.*.offer' => 'nullable|string|max:255',
             'items.*.profit_percentage' => 'nullable|numeric',
+            'items.*.discount_percentage' => 'nullable|numeric|min:0|max:100', // نسبة الخصم على الصنف
+            'discount_type' => 'required|string|in:total,per_item', // نوع الخصم
+            'discount_percentage' => 'nullable|numeric|min:0|max:100', // نسبة الخصم على الفاتورة
+            'supplier_id' => 'required|exists:suppliers,id', // التأكد من أن المورد موجود
+        ]);
+
+        $total_quantity = 0;
+        $total_cost_before_discount = 0;
+        $total_cost_after_discount = 0;
+        $total_discount_amount = 0;
+
+        $supplyOrder = SupplyOrder::create([
+            'supplier_id' => $request->supplier_id,
+            'discount_type' => $request->discount_type,
+            'total_quantity' => 0,
+            'total_cost_before_discount' => 0,
+            'total_cost_after_discount' => 0,
+            'discount_amount' => 0,
+            'order_date' => now(),
+            'note' => $request->note,
         ]);
 
         foreach ($request->items as $item) {
@@ -75,29 +98,50 @@ class WarehouseMedicineController extends Controller
                 $selling_price += ($item['profit_percentage'] / 100) * $item['price'];
             }
 
+            // تحديث مجموع الكميات
+            $total_quantity += $item['quantity'];
+
+            // التكلفة الإجمالية قبل الخصم لهذا الصنف
+            $item_total_cost = $item['quantity'] * $item['price'];
+            $total_cost_before_discount += $item_total_cost;
+
+            // حساب الخصم بناءً على نوع الخصم
+            $discount_amount = 0;
+
+            if ($request->discount_type == 'per_item') {
+                // إذا كان الخصم على صنف معين فقط
+                $discount_amount = $item_total_cost * ($item['discount_percentage'] / 100);
+            }
+
+            // التكلفة بعد الخصم لهذا الصنف
+            $item_cost_after_discount = $item_total_cost - $discount_amount;
+            $total_cost_after_discount += $item_cost_after_discount;
+            $total_discount_amount += $discount_amount;
+
             // الحصول على الشركة أو إنشاؤها
             $company = Company::firstOrCreate(['name' => $item['company_name']]);
 
-            // البحث عن الدواء في المستودع المحدد بنفس الاسم والشركة
+            // البحث عن الدواء
             $medicine = Medicine::where('name', $item['name'])
                 ->where('company_id', $company->id)
                 ->where('warehouse_id', $warehouse->id)
                 ->first();
 
             if ($medicine) {
-                // تحديث الدواء إذا كان موجودًا
+                // تحديث بيانات الدواء إذا كان موجودًا
                 $medicine->update([
                     'price' => $item['price'],
                     'quantity' => $medicine->quantity + $item['quantity'],
                     'date' => $item['date'],
-                    'barcode' => $item['barcode'] ?? $medicine->barcode, // الحفاظ على الباركود القديم إذا لم يُرسل جديد
+                    'barcode' => $item['barcode'] ?? $medicine->barcode,
                     'offer' => $item['offer'],
                     'profit_percentage' => $item['profit_percentage'],
                     'selling_price' => $selling_price,
                 ]);
             } else {
+
                 // إنشاء دواء جديد إذا لم يكن موجودًا
-                Medicine::create([
+                $medicine = Medicine::create([
                     'name' => $item['name'],
                     'company_id' => $company->id,
                     'warehouse_id' => $warehouse->id,
@@ -110,9 +154,43 @@ class WarehouseMedicineController extends Controller
                     'selling_price' => $selling_price,
                 ]);
             }
+
+            // إضافة الصنف إلى جدول
+            SupplyOrderItem::create([
+                'supply_order_id' => $supplyOrder->id,
+                'medicine_id' => $medicine->id,
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['price'],
+                'discount_percentage' => $item['discount_percentage'] ?? 0,
+                'discount_amount' => $discount_amount,
+                'subtotal' => $item_cost_after_discount,
+            ]);
         }
 
-        return redirect()->route('warehouse.medicines.index')->with('success', 'تم إضافة الدواء بنجاح.');
+        // إذا كان الخصم على إجمالي الفاتورة
+        if ($request->discount_type == 'total') {
+            $total_discount_amount = $total_cost_before_discount * ($request->discount_percentage / 100);
+            $total_cost_after_discount = $total_cost_before_discount - $total_discount_amount;
+        }
+
+        // تحديث بيانات الطلب بعد الحسابات النهائية
+        $supplyOrder->update([
+            'total_quantity' => $total_quantity,
+            'total_cost_before_discount' => $total_cost_before_discount,
+            'total_cost_after_discount' => $total_cost_after_discount,
+            'discount_amount' => $total_discount_amount,
+        ]);
+
+        // تحديث دين المورد في جدول suppliers
+        $supplier = Supplier::findOrFail($request->supplier_id);
+        $supplier->update([
+            'debt' => $supplier->debt + $total_cost_after_discount, // إضافة قيمة الفاتورة إلى الدين
+            'total_orders' => $supplier->total_orders + 1, // زيادة عدد الطلبيات
+            'balance' => $supplier->balance + $total_cost_after_discount, // تحديث الرصيد
+            'total_discounts'=>$supplier->total_discounts+$total_discount_amount
+        ]);
+
+        return redirect()->route('warehouse.medicines.index')->with('success', 'تمت إضافة الطلب بنجاح.');
     }
 
 

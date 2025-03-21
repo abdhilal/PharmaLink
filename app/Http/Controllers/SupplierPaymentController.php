@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Supplier;
 use App\Models\SupplierPayment;
 use Illuminate\Http\Request;
 
@@ -26,11 +27,34 @@ class SupplierPaymentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, $supplierId)
     {
-        //
-    }
+        $supplier = Supplier::where('warehouse_id', auth()->user()->warehouse->id)
+            ->findOrFail($supplierId);
 
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'payment_date' => 'required|date',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        // تسجيل الدفعة
+        SupplierPayment::create([
+            'supplier_id' => $supplier->id,
+            'amount' => $validated['amount'],
+            'payment_date' => $validated['payment_date'],
+            'note' => $validated['note'],
+        ]);
+
+        // تحديث الحالة المالية للمورد
+        $supplier->update([
+            'total_paid' => $supplier->total_paid + $validated['amount'],
+            'balance' => $supplier->balance - $validated['amount'], // تقليل الرصيد بمقدار الدفعة
+        ]);
+
+        return redirect()->route('warehouse.suppliers.show', $supplier->id)
+            ->with('success', 'تم تسجيل الدفعة بنجاح');
+    }
     /**
      * Display the specified resource.
      */

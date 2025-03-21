@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.warehouse.app')
 @section('title', 'عرض الطلبيات')
 @section('content')
     <div class="content">

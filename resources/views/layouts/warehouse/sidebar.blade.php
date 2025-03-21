@@ -38,7 +38,7 @@
                     </svg>
                 </span>
             </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-2">PharmaLink</span> <!-- تغيير اسم التطبيق -->
+            <span class="app-brand-text demo menu-text fw-bold ms-2">PharmaLink</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
@@ -73,7 +73,7 @@
                 </li>
                 <li class="menu-item">
                     <a href="{{ route('warehouse.medicines.create') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Add Medicine">إضافة دواء يدوي </div>
+                        <div class="text-truncate" data-i18n="Add Medicine">إضافة دواء يدوي</div>
                     </a>
                 </li>
                 <li class="menu-item">
@@ -81,7 +81,6 @@
                         <div class="text-truncate" data-i18n="Add Medicine">إضافة دواء</div>
                     </a>
                 </li>
-                <!-- يمكن إضافة تعديل وحذف لاحقًا عند تطويرهما -->
             </ul>
         </li>
 
@@ -97,15 +96,37 @@
                         <div class="text-truncate" data-i18n="View Orders">عرض الطلبيات</div>
                     </a>
                 </li>
-                <!-- يمكن إضافة إلغاء الطلبيات لاحقًا -->
             </ul>
         </li>
+
+        <!-- الصيدليات -->
         <li class="menu-item">
             <a href="{{ route('pharmacies.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-store"></i>
                 <div class="text-truncate" data-i18n="Pharmacies">الصيدليات</div>
             </a>
         </li>
+
+        <!-- الموردين (تمت الإضافة هنا) -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-car"></i>
+                <div class="text-truncate" data-i18n="Suppliers">الموردين</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="{{route('warehouse.suppliers.index')}}" class="menu-link">
+                        <div class="text-truncate" data-i18n="View Suppliers">عرض الموردين</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{route('warehouse.suppliers.create')}}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Add Supplier">إضافة مورد</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <!-- المدفوعات -->
         <li class="menu-item">
             <a href="{{ route('warehouse.payments') }}" class="menu-link">
@@ -134,16 +155,16 @@
             </ul>
         </li>
 
-        <!-- الإشعارات (مستقبلي) -->
+        <!-- الإشعارات -->
         <li class="menu-item">
             <a href="{{ route('warehouse.notifications') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-bell"></i>
                 <div class="text-truncate" data-i18n="Notifications">الإشعارات</div>
-                <span class="badge rounded-pill bg-danger ms-auto">3</span> <!-- مثال لعدد الإشعارات -->
+                <span class="badge rounded-pill bg-danger ms-auto">3</span>
             </a>
         </li>
 
-        <!-- التقارير (مستقبلي) -->
+        <!-- التقارير -->
         <li class="menu-item">
             <a href="{{ route('warehouse.reports') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-bar-chart"></i>
