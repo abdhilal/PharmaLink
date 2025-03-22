@@ -73,11 +73,6 @@
                 </li>
                 <li class="menu-item">
                     <a href="{{ route('warehouse.medicines.create') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Add Medicine">إضافة دواء يدوي</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="{{ route('warehouse.medicines.create') }}" class="menu-link">
                         <div class="text-truncate" data-i18n="Add Medicine">إضافة دواء</div>
                     </a>
                 </li>
@@ -127,12 +122,25 @@
             </ul>
         </li>
 
-        <!-- المدفوعات -->
         <li class="menu-item">
-            <a href="{{ route('warehouse.payments') }}" class="menu-link">
+            {{-- مدفوعات الصيدلي --}}
+            {{-- <a href="{{ route('warehouse.payments') }}" class="menu-link"> --}}
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-money"></i>
-                <div class="text-truncate" data-i18n="Payments">المدفوعات</div>
+                <div class="text-truncate" data-i18n="Payments">المالية</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="{{ route('warehouse.cash.index') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Account">الصندوق</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ route('warehouse.expenses.index') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Cities">المصاريف</div>
+                    </a>
+                </li>
+            </ul>
         </li>
 
         <!-- إعدادات الحساب -->

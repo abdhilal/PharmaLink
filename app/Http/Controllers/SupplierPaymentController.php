@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use App\Models\SupplierPayment;
+use App\Models\WarehouseCash;
 use Illuminate\Http\Request;
 
 class SupplierPaymentController extends Controller
@@ -38,13 +39,27 @@ class SupplierPaymentController extends Controller
             'note' => 'nullable|string|max:500',
         ]);
 
+
         // تسجيل الدفعة
-        SupplierPayment::create([
+        $payment = SupplierPayment::create([
             'supplier_id' => $supplier->id,
             'amount' => $validated['amount'],
             'payment_date' => $validated['payment_date'],
             'note' => $validated['note'],
         ]);
+
+
+        // تحديث جدول الصندوق
+        WarehouseCash::create([
+            'warehouse_id' => auth()->user()->warehouse->id,
+            'transaction_type' => 'expense',
+            'amount' => $validated['amount'],
+            'description' => 'دفعة للمورد: ' . $supplier->name,
+            'date' => $validated['payment_date'],
+            'related_id' => $payment->id,
+            'related_type' => 'supplier_payment',
+        ]);
+
 
         // تحديث الحالة المالية للمورد
         $supplier->update([

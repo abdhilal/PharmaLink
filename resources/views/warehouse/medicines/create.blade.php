@@ -36,6 +36,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="discount_type" class="form-label">نوع الحسم</label>
                                 <select name="discount_type" id="discount_type" class="form-control" required>
+                                    <option value="">اختر نوع الحسم</option>
                                     <option value="per_item">لكل صنف</option>
                                     <option value="total">على الفاتورة</option>
                                 </select>

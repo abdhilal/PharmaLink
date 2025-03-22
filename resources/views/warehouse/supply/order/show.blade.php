@@ -53,6 +53,7 @@
                         <td>{{ number_format($item->discount_percentage, 2) }}%</td>
                         <td>{{ number_format($item->discount_amount, 2) }}</td>
                         <td>{{ number_format($item->subtotal, 2) }}</td>
+                        
                     </tr>
                     @empty
                     <tr>

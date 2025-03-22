@@ -87,6 +87,7 @@
                         <th style="background-color: #efefef">التكلفة بعد الخصم</th>
                         <th>نوع الخصم</th>
                         <th>قيمة الخصم</th>
+                        <th>الاجراء</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,6 +100,18 @@
                         <td style="background-color: #efefef">{{ number_format($order->total_cost_after_discount, 2) }}</td>
                         <td>{{ $order->discount_type == 'per_item' ? 'لكل صنف' : 'على الإجمالي' }}</td>
                         <td>{{ number_format($order->discount_amount, 2) }}</td>
+                        <td onclick="event.stopPropagation();">
+                            <a href="{{ route('warehouse.supply_order.edit', $order->id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bx bx-edit-alt me-1"></i> تعديل
+                            </a>
+<form action="{{ route('warehouse.supply_order.destroy', $order->id) }}" method="POST">
+    @csrf
+    @method('DELETE')
+<button type="submit" class="btn btn-sm btn-outline-primary"><i class="bx bx-warining-alt me-1"></i> حذف</button>
+
+
+                        </form>
+                        </td>
                     </tr>
                     @empty
                     <tr>

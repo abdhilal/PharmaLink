@@ -9,7 +9,8 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\SupplyOrderController;
-
+use App\Http\Controllers\CashController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\WarehouseMedicineController;
 use App\Http\Controllers\WarehouseController;
 use App\Models\SupplierPayment;
@@ -101,12 +102,16 @@ Route::get('/suppliers/{id}/edit', [SupplierController::class, 'edit'])->name('w
 Route::put('/suppliers/{id}', [SupplierController::class, 'update'])->name('warehouse.suppliers.update');
 Route::post('/suppliers', [SupplierController::class, 'store'])->name('warehouse.suppliers.store');
 Route::post('/suppliers/{supplier}/payments', [SupplierPaymentController::class, 'store'])->name('warehouse.supplier_payments.store');
-Route::get('/suppliers/{supplier}/order', [SupplyOrderController::class, 'show'])->name('warehouse.supplier_order.show');
+//طلبيات الموردين
+Route::get('/supply-orders/{supplier}/order', [SupplyOrderController::class, 'show'])->name('warehouse.supplier_order.show');
+Route::get('/supply-orders/{supplyOrder}/edit', [SupplyOrderController::class, 'edit'])->name('warehouse.supply_order.edit');
+Route::delete('/supply-orders/{supplyOrder}/destroy', [SupplyOrderController::class, 'destroy'])->name('warehouse.supply_order.destroy');
+ Route::post('/supply-orders/{supplyOrder}', [SupplyOrderController::class, 'update'])->name('warehouse.supply_order.update');
 
 
 });
 
-
+//طلبيات الصيدلي
 Route::middleware('auth')->prefix('warehouse')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -125,7 +130,14 @@ Route::prefix('pharmacy')->group(function () {
 
 
 
+// الصندوق والمصاريف
 
+
+Route::middleware(['auth'])->prefix('warehouse')->group(function () {
+    Route::get('/expenses', [ExpenseController::class, 'index'])->name('warehouse.expenses.index');
+    Route::post('/expenses', [ExpenseController::class, 'store'])->name('warehouse.expenses.store');
+    Route::get('/cash', [CashController::class, 'index'])->name('warehouse.cash.index');
+});
 
 
 

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Warehouse;
+use App\Models\WarehouseCash;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -28,7 +29,7 @@ class UserSeeder extends Seeder
         ]);
 
         // ربط المستودع بحساب المستخدم
-        Warehouse::create([
+        $warehouse=   Warehouse::create([
             'user_id' => $warehouseUser->id,
             'phone' => '123-456-7890',
             'address' => '123 Warehouse St.',
