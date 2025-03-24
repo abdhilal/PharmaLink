@@ -24,7 +24,7 @@
             @auth
                 <a href="{{ route('medicines.index') }}">Medicines</a>
                 <a href="{{ route('cart.show') }}">Cart</a>
-                <a href="{{ route('orders.index') }}">Orders</a>
+                {{-- <a href="{{ route('orders.index') }}">Orders</a> --}}
                 @if (Auth::user()->warehouse)
                 <a href="{{ route('warehouse.payments') }}">Payments</a>
 

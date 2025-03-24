@@ -9,7 +9,7 @@
                 <div class="row">
                     <div class="col-lg-6 col-md-12 col-6 mb-6">
                         <div class="card h-100">
-                            <a href="{{ route('orders.index') }}" class="menu-link">
+                            <a href="{{ route('warehouse.orders.index') }}" class="menu-link">
 
                             <div class="card-body">
                                 <div class="card-title d-flex align-items-start justify-content-between mb-4">
@@ -28,7 +28,7 @@
 
                     <div class="col-lg-6 col-md-12 col-6 mb-6">
                         <div class="card h-100">
-                            <a href="{{ route('pharmacies.index') }}" class="menu-link">
+                            <a href="{{ route('warehouse.pharmacies.index') }}" class="menu-link">
 
                             <div class="card-body">
 

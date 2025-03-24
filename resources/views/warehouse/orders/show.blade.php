@@ -1,57 +1,43 @@
 @extends('layouts.warehouse.app')
-@section('title', 'تفاصيل الطلبية')
+@section('title', 'تفاصيل الطلبية - PharmaLink')
 @section('content')
-    <div class="content">
-        <h1>تفاصيل الطلبية #{{ $order->id }}</h1>
-        <div class="order-details">
-            <p><strong>الصيدلية:</strong> {{ $order->pharmacy->name }}</p>
-            <p><strong>السعر الإجمالي:</strong> {{ number_format($order->total_price, 2) }} ريال</p>
-            <p><strong>الحالة:</strong> {{ $order->status === 'pending' ? 'معلقة' : ($order->status === 'delivered' ? 'مسلمة' : 'ملغاة') }}</p>
-            <p><strong>حالة الدين:</strong>
-                @php
-                    $debt = $order->transactions->where('type', 'debt')->first();
-                    $paid = $debt ? 'غير مدفوع' : 'لا يوجد دين';
-                @endphp
-                {{ $paid }}
-            </p>
-        </div>
+<div class="card">
+    <h5 class="card-header">تفاصيل الطلبية #{{ $order->id }}</h5>
+    <div class="card-body">
+        <p><strong>الصيدلية:</strong> {{ $order->pharmacy->name }}</p>
+        <p><strong>الحالة:</strong> {{ $order->status === 'pending' ? 'معلقة' : ($order->status === 'delivered' ? 'مسلمة' : 'ملغاة') }}</p>
+        <p><strong>التاريخ:</strong> {{ $order->created_at->format('Y-m-d') }}</p>
+        <p><strong>السعر الإجمالي:</strong> {{ number_format($order->total_price, 2) }} ريال</p>
 
-        <h2>العناصر</h2>
-        <table class="table">
+        <h6 class="mt-4">العناصر</h6>
+        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>اسم الدواء</th>
+                    <th>#</th>
+                    <th>الدواء</th>
+                    <th>الشركة</th>
                     <th>الكمية</th>
                     <th>السعر للوحدة</th>
                     <th>المجموع الفرعي</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($order->items as $item)
-                    <tr>
-                        <td>{{ $item->medicine->name }}</td>
-                        <td>{{ $item->quantity }}</td>
-                        <td>{{ number_format($item->price_per_unit, 2) }} ريال</td>
-                        <td>{{ number_format($item->quantity * $item->price_per_unit, 2) }} ريال</td>
-                    </tr>
+                @forelse ($order->items as $index => $item)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $item->medicine->name }}</td>
+                    <td>{{ $item->medicine->company->name}}</td>
+                    <td>{{ $item->quantity }}</td>
+                    <td>{{ number_format($item->price_per_unit, 2) }} ريال</td>
+                    <td>{{ number_format($item->subtotal, 2) }} ريال</td>
+                </tr>
                 @empty
-                    <tr>
-                        <td colspan="4">لا توجد عناصر في هذه الطلبية</td>
-                    </tr>
+                <tr><td colspan="5" class="text-center">لا توجد عناصر</td></tr>
                 @endforelse
             </tbody>
         </table>
 
-        <a href="{{ route('orders.index') }}" class="btn btn-primary">العودة إلى الطلبيات</a>
+        <a href="{{ route('warehouse.orders.index') }}" class="btn btn-primary">رجوع</a>
     </div>
+</div>
 @endsection
-
-<style>
-    .content { padding: 20px; }
-    .order-details { margin-bottom: 20px; }
-    .order-details p { margin: 5px 0; }
-    .table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #f2f2f2; }
-    .btn { padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-</style>

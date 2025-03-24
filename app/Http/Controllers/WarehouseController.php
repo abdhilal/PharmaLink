@@ -63,7 +63,7 @@ class WarehouseController extends Controller
         $lowStockMedicines = $warehouse->medicines->filter(function ($medicine) {
             return $medicine->quantity <= 10;
         })->take(5); // الأدوية منخفضة الكمية
-      
+
 
         return view('dashboard', compact(
             'warehouse', 'pendingOrders', 'deliveredOrders', 'totalSales', 'latestOrders',

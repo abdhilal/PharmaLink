@@ -3,27 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Order;
+use App\Models\Account;
 use Illuminate\Http\Request;
 
 class PharmacyController extends Controller
 {
-
-
-    // عرض قائمة الصيدليات
-    public function index()
+    public function index(Request $request)
     {
         $warehouseId = auth()->user()->warehouse->id;
-        $pharmacies = User::where('role', 'pharmacy')
+
+        $query = User::where('role', 'pharmacy')
             ->whereHas('accounts', function ($query) use ($warehouseId) {
                 $query->where('warehouse_id', $warehouseId);
             })
-            ->with('city')
-            ->get();
+            ->with('city', 'accounts.transactions');
+
+        // فلترة حسب الاسم أو المدينة
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('city', function ($q) use ($request) {
+                      $q->where('name', 'like', '%' . $request->search . '%');
+                  });
+        }
+
+        $pharmacies = $query->withCount(['orders' => function ($query) use ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }])->paginate(10);
 
         return view('warehouse.pharmacies.index', compact('pharmacies'));
     }
 
-    // عرض تفاصيل صيدلية معينة
     public function show(User $pharmacy)
     {
         if ($pharmacy->role !== 'pharmacy') {
@@ -32,18 +42,16 @@ class PharmacyController extends Controller
 
         $warehouseId = auth()->user()->warehouse->id;
 
-        // جلب كل البيانات دفعة واحدة مع التحقق من المستودع
         $pharmacy->load([
             'city',
             'orders' => function ($query) use ($warehouseId) {
-                $query->where('warehouse_id', $warehouseId);
+                $query->where('warehouse_id', $warehouseId)->with('items.medicine');
             },
             'accounts' => function ($query) use ($warehouseId) {
                 $query->where('warehouse_id', $warehouseId)->with('transactions');
             }
         ]);
 
-        // التحقق من وجود حساب مرتبط
         if (!$pharmacy->accounts->isNotEmpty()) {
             abort(404, 'لا يوجد حساب مرتبط لهذه الصيدلية مع المستودع.');
         }

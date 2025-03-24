@@ -15,4 +15,12 @@ class WarehouseCash extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
+
+
+    // العلاقة العكسية مع الكيانات المرتبطة (Polymorphic)
+
+    public function related()
+    {
+        return $this->morphTo();
+    }
 }

@@ -87,8 +87,13 @@
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
-                    <a href="{{ route('orders.index') }}" class="menu-link">
+                    <a href="{{ route('warehouse.orders.index') }}" class="menu-link">
                         <div class="text-truncate" data-i18n="View Orders">عرض الطلبيات</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ route('warehouse.orders.create_manual') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="View Orders">طلبية بيع مباشر</div>
                     </a>
                 </li>
             </ul>
@@ -96,7 +101,7 @@
 
         <!-- الصيدليات -->
         <li class="menu-item">
-            <a href="{{ route('pharmacies.index') }}" class="menu-link">
+            <a href="{{ route('warehouse.pharmacies.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-store"></i>
                 <div class="text-truncate" data-i18n="Pharmacies">الصيدليات</div>
             </a>
@@ -122,9 +127,11 @@
             </ul>
         </li>
 
+            <!-- روابط أخرى -->
+
+
         <li class="menu-item">
-            {{-- مدفوعات الصيدلي --}}
-            {{-- <a href="{{ route('warehouse.payments') }}" class="menu-link"> --}}
+
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-money"></i>
                 <div class="text-truncate" data-i18n="Payments">المالية</div>
@@ -139,6 +146,9 @@
                     <a href="{{ route('warehouse.expenses.index') }}" class="menu-link">
                         <div class="text-truncate" data-i18n="Cities">المصاريف</div>
                     </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ route('warehouse.employees.index') }}"><div class="text-truncate" data-i18n="Cities">الموظفون</div></a>
                 </li>
             </ul>
         </li>
@@ -174,7 +184,7 @@
 
         <!-- التقارير -->
         <li class="menu-item">
-            <a href="{{ route('warehouse.reports') }}" class="menu-link">
+            <a href="{{ route('warehouse.financial_report') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-bar-chart"></i>
                 <div class="text-truncate" data-i18n="Reports">التقارير</div>
             </a>

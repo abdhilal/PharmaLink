@@ -36,4 +36,12 @@ class Warehouse extends Model
         return $this->hasMany(Supplier::class, 'warehouse_id');
     }
 
+
+    // العلاقة مع الموظفين 
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class);
+    }
+
 }
