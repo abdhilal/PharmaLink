@@ -13,9 +13,9 @@ class Warehouse extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function cities()
+    public function city()
     {
-        return $this->belongsToMany(City::class, 'warehouse_cities');
+        return $this->hasOne(City::class);
     }
 
     public function medicines()
@@ -37,7 +37,7 @@ class Warehouse extends Model
     }
 
 
-    // العلاقة مع الموظفين 
+    // العلاقة مع الموظفين
 
     public function employees()
     {

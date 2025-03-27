@@ -139,7 +139,7 @@
 <body>
     <header>
         <nav class="navbar">
-            <div class="logo"><img src="{{ asset('assets/images/logo.svg') }}" alt="Trafalgar"></div>
+            <div class=""><img src="{{asset('warehouse/img/logo.svg')}}" alt="PharmaLink"></div>
             <div class="menu-icon">
                 <div class="line1"></div>
                 <div class="line2"></div>
@@ -158,7 +158,10 @@
     </header>
 
     <section class="signup-section">
+
         <div class="signup-container">
+            <div class=""><img src="{{asset('warehouse/img/logo.svg')}}" alt="PharmaLink"></div>
+
             <h2 class="signup-title">Create an Account</h2>
 
             <div class="account-type">

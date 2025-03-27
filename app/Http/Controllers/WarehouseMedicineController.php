@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Medicine;
 use App\Models\Company;
+use App\Models\Offer;
 use App\Models\Supplier;
 use App\Models\SupplierPayment;
 use App\Models\SupplyOrder;
 use App\Models\SupplyOrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
 class WarehouseMedicineController extends Controller
@@ -24,8 +26,7 @@ class WarehouseMedicineController extends Controller
 
         $expiringMedicines = Medicine::where('warehouse_id', $warehouse->id)
             ->where(function ($query) {
-                $query->where('quantity', '<=', 10)
-                    ->orWhere('date', '<=', now()->addMonth());
+                $query->where('quantity', '<=', 10);
             })
             ->with('company')
             ->get();
@@ -40,18 +41,89 @@ class WarehouseMedicineController extends Controller
         // جلب الأدوية بدون تكرار الاسم مع الاحتفاظ بالمعلومات الأخرى
         $medicines = Medicine::where('warehouse_id', $warehouse->id)
             ->with('company')
-            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer', 'discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id')
+            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer', 'discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id', 'is_hidden')
             ->get();
 
-        $suppliers = Supplier::all();
+        $suppliers=Supplier::where('warehouse_id',Auth::user()->warehouse->id)->get();
 
         return view('warehouse.medicines.create', compact(['medicines', 'suppliers']));
     }
 
 
 
+    public function brochure()
+    {
+        $warehouse = auth()->user()->warehouse;
+        $medicines = Medicine::where('warehouse_id', $warehouse->id)
+            ->with('company')
+            ->orderBy('company_id') // ترتيب حسب الشركة أولاً
+            ->get()
+            ->groupBy('company.name'); // تجميع حسب اسم الشركة
 
+        $expiringMedicines = Medicine::where('warehouse_id', $warehouse->id)
+            ->where(function ($query) {
+                $query->where('quantity', '<=', 10)
+                    ->orWhere('date', '<=', now()->addMonth());
+            })
+            ->with('company')
+            ->get();
+        $offer = Offer::where('warehouse_id', $warehouse->id)->latest()->first();
 
+        return view('warehouse.medicines.brochure', compact('medicines', 'expiringMedicines', 'offer'));
+    }
+
+    public function is_hidden($medicineId)
+    {
+
+        $medicine = Medicine::find($medicineId);
+
+        if (!$medicine->is_hidden) {
+
+            $medicine->update([
+                'is_hidden' => 1
+            ]);
+            return redirect()->route('warehouse.medicines.brochure');
+        } else {
+
+            $medicine->update([
+                'is_hidden' => 0
+            ]);
+            return redirect()->route('warehouse.medicines.brochure');
+        }
+    }
+
+    public function offer(Request $request)
+    {
+        $warehouse = auth()->user()->warehouse;
+
+        $request->validate([
+            'image' => 'nullable|image',
+            'title' => 'nullable|string|max:255',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('offers', 'public');
+        }
+
+        $offer = Offer::firstOrCreate(
+            ['warehouse_id' => $warehouse->id], // البحث باستخدام هذه القيم
+            [
+                'warehouse_id' => $warehouse->id,
+                'image' => $imagePath ?? null,
+                'title' => $request->title ?? null,
+            ] // سيتم استخدام هذه القيم لإنشاء السجل إذا لم يكن موجودًا
+        );
+
+        if ($offer) {
+            $offer->update([
+                'image' => $imagePath ?? null,
+                'title' => $request->title ?? null,
+
+            ]);
+        }
+
+        return redirect()->route('warehouse.medicines.brochure')->with('success', 'تم رفع الإعلان بنجاح.');
+    }
 
 
     public function store(Request $request)
@@ -59,13 +131,14 @@ class WarehouseMedicineController extends Controller
         $warehouse = auth()->user()->warehouse;
 
         // التحقق من صحة البيانات
+
         $request->validate([
             'items' => 'required|array',
             'items.*.name' => 'required|string|max:255',
             'items.*.company_name' => 'required|string|max:255',
             'items.*.price' => 'required|numeric|min:0',
             'items.*.quantity' => 'required|integer|min:0',
-            'items.*.date' => 'required|date|after:today',
+            'items.*.date' => 'required|date',
             'items.*.barcode' => 'nullable|string|max:50',
             'items.*.offer' => 'nullable|string|max:255',
             'items.*.profit_percentage' => 'nullable|numeric',
@@ -187,7 +260,7 @@ class WarehouseMedicineController extends Controller
             'debt' => $supplier->debt + $total_cost_after_discount, // إضافة قيمة الفاتورة إلى الدين
             'total_orders' => $supplier->total_orders + 1, // زيادة عدد الطلبيات
             'balance' => $supplier->balance + $total_cost_after_discount, // تحديث الرصيد
-            'total_discounts'=>$supplier->total_discounts+$total_discount_amount
+            'total_discounts' => $supplier->total_discounts + $total_discount_amount
         ]);
 
         return redirect()->route('warehouse.medicines.index')->with('success', 'تمت إضافة الطلب بنجاح.');

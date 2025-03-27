@@ -18,6 +18,7 @@ class Medicine extends Model
         'discount_percentage', // نسبة الحسم
         'profit_percentage', // نسبة الربح
         'selling_price', // سعر البيع
+        'is_hidden'
     ];
 
     public function warehouse()

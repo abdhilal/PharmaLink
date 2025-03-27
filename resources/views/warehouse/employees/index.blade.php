@@ -24,7 +24,7 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $employee->name }}</td>
                     <td>{{ $employee->position }}</td>
-                    <td>{{ number_format($employee->salary, 2) }} ريال</td>
+                    <td>{{ number_format($employee->salary, 2) }} $</td>
                     <td>{{ $employee->status === 'active' ? 'نشط' : 'غير نشط' }}</td>
                     <td>
                         <a href="{{ route('warehouse.employees.show', $employee->id) }}" class="btn btn-sm btn-info">عرض</a>

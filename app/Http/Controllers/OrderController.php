@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
 
-    //  * عرض جميع الطلبيات حسب دور المستخدم.
 
 
 
@@ -93,13 +92,11 @@ class OrderController extends Controller
         $order = Order::with('items.medicine')->findOrFail($orderId);
 
 
-        // if ($order->warehouse_id !== Auth::user()->warehouse->id || $order->status !== 'pending') {
-        //     return back()->with('error', 'عملية غير مصرح بها أو الطلبية غير قابلة للتعديل.');
-        // }
+     
 
         $medicines = Medicine::where('warehouse_id', Auth::user()->warehouse->id)
             ->with('company')
-            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer', 'discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id')
+            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer', 'discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id', 'is_hidden')
             ->get();
 
         return view('warehouse.orders.edit', compact('order', 'medicines'));
@@ -208,54 +205,7 @@ class OrderController extends Controller
 
         return redirect()->route('warehouse.orders.index')->with('success', 'تم تعديل الطلبية بنجاح.');
     }
-    // public function update(Request $request, Order $order)
-    // {
-    //     if ($order->warehouse_id !== Auth::user()->warehouse->id || $order->status !== 'pending') {
-    //         return back()->with('error', 'عملية غير مصرح بها أو الطلبية غير قابلة للتعديل.');
-    //     }
 
-    //     $request->validate([
-    //         'items' => 'required|array', // يجب أن يحتوي على عنصر واحد على الأقل
-    //         'items.*.medicine_id' => 'required|exists:medicines,id',
-    //         'items.*.quantity' => 'required|integer|min:1',
-    //     ]);
-
-    //     DB::transaction(function () use ($request, $order) {
-    //         $warehouseId = Auth::user()->warehouse->id;
-    //         $totalPrice = 0;
-
-    //         foreach ($order->items as $orderItem) {
-    //             $orderItem->delete();
-    //         }
-
-    //         // 2. إنشاء العناصر الجديدة بناءً على البيانات المُرسلة
-    //         foreach ($request->items as $itemData) {
-    //             $medicine = Medicine::where('id', $itemData['medicine_id'])
-    //                                ->where('warehouse_id', $warehouseId)
-    //                                ->firstOrFail();
-
-    //             // حساب المجموع الفرعي
-    //             $subtotal = $medicine->selling_price * $itemData['quantity'];
-    //             $totalPrice += $subtotal;
-
-    //             // إنشاء العنصر في order_items
-    //             OrderItem::create([
-    //                 'order_id' => $order->id,
-    //                 'medicine_id' => $medicine->id,
-    //                 'quantity' => $itemData['quantity'],
-    //                 'price_per_unit' => $medicine->selling_price,
-    //                 'subtotal' => $subtotal,
-    //             ]);
-    //         }
-
-    //         // 3. تحديث إجمالي الطلبية
-    //         $order->update([
-    //             'total_price' => $totalPrice,
-    //         ]);
-    //     });
-
-    //     return redirect()->route('warehouse.orders.index')->with('success', 'تم تعديل الطلبية بنجاح.');
-    // }
 
 
     /**
@@ -363,7 +313,6 @@ class OrderController extends Controller
 
                 $subtotal = $medicine->selling_price * $itemData['quantity'];
                 $totalPrice += $subtotal;
-
                 OrderItem::create([
                     'order_id' => $order->id,
                     'medicine_id' => $medicine->id,

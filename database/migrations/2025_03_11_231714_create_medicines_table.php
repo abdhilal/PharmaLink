@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('discount_percentage', 5, 2)->nullable(); // نسبة الحسم
             $table->decimal('profit_percentage', 5, 2)->nullable(); // نسبة الربح
             $table->decimal('selling_price', 8, 2)->nullable(); // سعر البيع
+            $table->boolean('is_hidden')->default(0); // افتراضيًا الدواء مرئي
             $table->timestamps(); // تواريخ الإنشاء والتحديث
         });
     }

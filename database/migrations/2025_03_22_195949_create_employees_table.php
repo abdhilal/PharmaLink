@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name'); // اسم الموظف
             $table->string('phone')->nullable(); // رقم الهاتف
             $table->string('position'); // المنصب (مثل: مندوب، محاسب، مدير)
-            $table->decimal('salary', 8, 2); // الراتب الأساسي
+            $table->decimal('salary', 8, 2)->default(0.00); // الراتب الأساسي
             $table->date('date'); // تاريخ التوظيف
             $table->enum('status', ['active', 'inactive'])->default('active'); // حالة الموظف
             $table->timestamps();

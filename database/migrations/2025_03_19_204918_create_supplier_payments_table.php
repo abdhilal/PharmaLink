@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('supplier_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
-            $table->decimal('amount', 10, 2);
+            $table->decimal('amount', 10, 2)->default(0.00);
             $table->date('payment_date');
             $table->text('note')->nullable();
             $table->timestamps();

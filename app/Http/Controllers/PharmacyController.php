@@ -9,22 +9,25 @@ use Illuminate\Http\Request;
 
 class PharmacyController extends Controller
 {
+    //عرض الصيدليات التي لها طلبيات بالمستودع
     public function index(Request $request)
     {
         $warehouseId = auth()->user()->warehouse->id;
 
         $query = User::where('role', 'pharmacy')
-            ->whereHas('accounts', function ($query) use ($warehouseId) {
-                $query->where('warehouse_id', $warehouseId);
-            })
-            ->with('city', 'accounts.transactions');
+        ->whereHas('accounts', function ($query) use ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        })
+        ->with(['city', 'accounts' => function ($query) use ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId)->with('transactions');
+        }]);
 
         // فلترة حسب الاسم أو المدينة
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('city', function ($q) use ($request) {
-                      $q->where('name', 'like', '%' . $request->search . '%');
-                  });
+                ->orWhereHas('city', function ($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%');
+                });
         }
 
         $pharmacies = $query->withCount(['orders' => function ($query) use ($warehouseId) {
@@ -34,6 +37,9 @@ class PharmacyController extends Controller
         return view('warehouse.pharmacies.index', compact('pharmacies'));
     }
 
+
+
+//عرض تفاصيل صيدلي
     public function show(User $pharmacy)
     {
         if ($pharmacy->role !== 'pharmacy') {
@@ -58,4 +64,7 @@ class PharmacyController extends Controller
 
         return view('warehouse.pharmacies.show', compact('pharmacy'));
     }
+
+
+  
 }

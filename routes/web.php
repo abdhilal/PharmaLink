@@ -13,7 +13,9 @@ use App\Http\Controllers\SupplyOrderController;
 use App\Http\Controllers\CashController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\PharmacyOrderController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UrgentOrderController;
 use App\Http\Controllers\WarehouseMedicineController;
 use App\Http\Controllers\WarehouseController;
 use App\Models\SupplierPayment;
@@ -31,69 +33,45 @@ Route::middleware('auth')->group(function () {
 });
 
 
-// راوتات السلة
-Route::middleware('auth')->group(function () {
-    Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
-    Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-});
-Route::post('/cart/add-multiple', [App\Http\Controllers\CartController::class, 'addMultiple'])->name('cart.addMultiple');
-Route::post('/cart/update', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
-Route::post('/cart/remove', [App\Http\Controllers\CartController::class, 'remove'])->name('cart.remove');
-
-Route::middleware('auth')->group(function () {
-    // Route::post('/payment/debt/{order}', [PaymentController::class, 'recordDebt'])->name('payment.debt');
-    // Route::post('/payment/make', [PaymentController::class, 'makePayment'])->name('payment.make');
-});
-
-
 Route::get('/', function () {
-    return auth()->check() ? redirect()->route('medicines.index') : view('welcome');
+    return  view('welcome');
 })->name('home');
 
-//واجه قائمة الادوية
-Route::get('/medicines', [MedicineController::class, 'index'])->name('medicines.index')->middleware('auth');
 
 
-//زر الموافقة على تعديل طلبية الصيدلي من
-// Route::patch('/orders/{order}', [OrderController::class, 'updateStatus'])->name('orders.update');
+Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
 
-
-//عرض المستودعات حسب المدينة
-Route::get('/warehouses', [App\Http\Controllers\WarehouseController::class, 'index'])->name('warehouses.index');
-
-Route::middleware('auth')->prefix('warehouse')->group(function () {
-    // عرض قائمة الأدوية
+    //داش بورد
+    Route::get('/dashboard', [WarehouseController::class, 'dashboard'])->name('warehouse.dashboard');
+    //عرض ادوية المستودع والتحكم بها
     Route::get('/medicines', [WarehouseMedicineController::class, 'index'])->name('warehouse.medicines.index');
-
-    // عرض صفحة إضافة دواء
+    Route::delete('/medicines/{medicine}', [WarehouseMedicineController::class, 'destroy'])->name('warehouse.medicines.destroy');
+    Route::patch('/medicines/{medicine}', [WarehouseMedicineController::class, 'update'])->name('warehouse.medicines.update');
+    Route::get('/medicines/{medicine}/edit', [WarehouseMedicineController::class, 'edit'])->name('warehouse.medicines.edit');
+    Route::post('/medicines', [WarehouseMedicineController::class, 'store'])->name('warehouse.medicines.store');
     Route::get('/medicines/create', [WarehouseMedicineController::class, 'create'])->name('warehouse.medicines.create');
 
-    // حفظ دواء جديد
-    Route::post('/medicines', [WarehouseMedicineController::class, 'store'])->name('warehouse.medicines.store');
+    // بروشور المستودع والتجكم به
+    Route::get('medicines/brochure', [WarehouseMedicineController::class, 'brochure'])->name('warehouse.medicines.brochure');
+    Route::post('medicine/is_hidden/{medicineId}', [WarehouseMedicineController::class, 'is_hidden'])->name('warehouse.medicines.is_hidden');
 
-    // عرض صفحة تعديل دواء
-    Route::get('/medicines/{medicine}/edit', [WarehouseMedicineController::class, 'edit'])->name('warehouse.medicines.edit');
+    //العرورض على البروشور
+    Route::post('medicine/offer/', [WarehouseMedicineController::class, 'offer'])->name('warehouse.medicines.offer');
 
-    // تحديث بيانات الدواء
-    Route::patch('/medicines/{medicine}', [WarehouseMedicineController::class, 'update'])->name('warehouse.medicines.update');
+    //اعدادات الحساب بالمستودع
+    Route::get('/settings/account', [ProfileController::class, 'edit'])->name('warehouse.settings.account');
 
-    // حذف الدواء
-    Route::delete('/medicines/{medicine}', [WarehouseMedicineController::class, 'destroy'])->name('warehouse.medicines.destroy');
-});
-
-
-
-
-Route::middleware('auth')->prefix('warehouse')->group(function () {
-    Route::get('/dashboard', [WarehouseController::class, 'dashboard'])->name('warehouse.dashboard');
-    Route::get('/medicines', [WarehouseMedicineController::class, 'index'])->name('warehouse.medicines.index');
-
-
-    Route::get('/settings/account', [SettingsController::class, 'account'])->name('warehouse.settings.account');
+    //الاشعارات بس لسع مو شغالة
     Route::get('/notifications', [NotificationController::class, 'index'])->name('warehouse.notifications');
-    //التقارير المالية
-    Route::get('/financial-report', [ReportController::class, 'financialReport'])->name('warehouse.financial_report');    Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('warehouse.settings.cities');
+
+    //اعدادات الموقع
+    Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('warehouse.settings.cities');
     Route::patch('/settings/cities', [SettingsController::class, 'updateCities'])->name('warehouse.settings.updateCities');
+    Route::post('/location/store', [SettingsController::class, 'store'])->name('location.store');
+
+    //التقارير المالية
+    Route::get('/financial-report', [ReportController::class, 'financialReport'])->name('warehouse.financial_report');
+
     //الموردين
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('warehouse.suppliers.index');
     Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('warehouse.suppliers.create');
@@ -101,18 +79,18 @@ Route::middleware('auth')->prefix('warehouse')->group(function () {
     Route::get('/suppliers/{id}/edit', [SupplierController::class, 'edit'])->name('warehouse.suppliers.edit');
     Route::put('/suppliers/{id}', [SupplierController::class, 'update'])->name('warehouse.suppliers.update');
     Route::post('/suppliers', [SupplierController::class, 'store'])->name('warehouse.suppliers.store');
+    //تسجيل دفعه لمورد
     Route::post('/suppliers/{supplier}/payments', [SupplierPaymentController::class, 'store'])->name('warehouse.supplier_payments.store');
+
     //طلبيات الموردين
     Route::get('/supply-orders/{supplier}/order', [SupplyOrderController::class, 'show'])->name('warehouse.supplier_order.show');
     Route::get('/supply-orders/{supplyOrder}/edit', [SupplyOrderController::class, 'edit'])->name('warehouse.supply_order.edit');
     Route::delete('/supply-orders/{supplyOrder}/destroy', [SupplyOrderController::class, 'destroy'])->name('warehouse.supply_order.destroy');
     Route::post('/supply-orders/{supplyOrder}', [SupplyOrderController::class, 'update'])->name('warehouse.supply_order.update');
-});
-
-// //طلبيات الصيدلي
 
 
-Route::middleware(['auth'])->prefix('warehouse')->group(function () {
+
+    //ادارة الطلبيات والتحكم بها كمان
     Route::get('/orders/create-manual', [OrderController::class, 'createManual'])->name('warehouse.orders.create_manual');
     Route::post('/orders/store-manual', [OrderController::class, 'storeManual'])->name('warehouse.orders.store_manual');
     Route::get('/orders', [OrderController::class, 'index'])->name('warehouse.orders.index');
@@ -122,28 +100,26 @@ Route::middleware(['auth'])->prefix('warehouse')->group(function () {
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('warehouse.orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('warehouse.orders.destroy');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('warehouse.orders.cancel');
-});
 
 
 
-// للصيدلي
-Route::prefix('pharmacy')->group(function () {
-    Route::get('/balance', [PaymentController::class, 'pharmacyBalance'])->name('pharmacy.balance');
-});
+    //طلبيات الخدمة العاجلة
+    Route::get('/urgentorders', [UrgentOrderController::class, 'index'])->name('warehouse.urgentorder.index');
+    Route::get('/urgentorders/{id}/pharmacy/{pharmacy}', [UrgentOrderController::class, 'show'])->name('warehouse.urgentorder.show');
+
+    // اخذ او قبول الطلبية
+    Route::post('/urgentorders/{id}/approve', [UrgentOrderController::class, 'approve'])->name('warehouse.urgentorder.approve');
+    Route::post('/orders/store-manual', [UrgentOrderController::class, 'storeManual'])->name('warehouse.urgentorder.store_manual');
 
 
 
-// الصندوق والمصاريف
-
-Route::middleware(['auth'])->prefix('warehouse')->group(function () {
+    //والمصاريف
     Route::get('/expenses', [ExpenseController::class, 'index'])->name('warehouse.expenses.index');
     Route::post('/expenses', [ExpenseController::class, 'store'])->name('warehouse.expenses.store');
+    //الصندوق
     Route::get('/cash', [CashController::class, 'index'])->name('warehouse.cash.index');
-});
 
-
-//الموظفين
-Route::middleware(['auth'])->prefix('warehouse')->group(function () {
+    //الموظفين
     Route::get('/employees', [EmployeeController::class, 'index'])->name('warehouse.employees.index');
     Route::get('/employees/create', [EmployeeController::class, 'create'])->name('warehouse.employees.create');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('warehouse.employees.store');
@@ -151,15 +127,11 @@ Route::middleware(['auth'])->prefix('warehouse')->group(function () {
     Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('warehouse.employees.edit');
     Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('warehouse.employees.update');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('warehouse.employees.destroy');
+    //دفع راتب موظف
     Route::post('/employees/{employee}/pay', [EmployeeController::class, 'paySalary'])->name('warehouse.employees.pay');
-});
 
 
-
-
-//عرض الصيدليات وتسحيل دفعات منهم
-
-Route::middleware(['auth'])->prefix('warehouse')->group(function () {
+    //عرض الصيدليات وتسحيل دفعات منهم
     Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('warehouse.pharmacies.index');
     Route::get('/pharmacies/{pharmacy}', [PharmacyController::class, 'show'])->name('warehouse.pharmacies.show');
     Route::get('/payments', [PaymentController::class, 'index'])->name('warehouse.payments.index');
@@ -172,11 +144,44 @@ Route::middleware(['auth'])->prefix('warehouse')->group(function () {
 
 
 
+//طرف الصيدلي
 
 
+Route::middleware(['pharmacy'])->prefix('pharmacy')->group(function () {
 
+    //عرض المستودعات التي تخدم هذا الصيدلي حسب الموقع
+    Route::get('/warehouses', [WarehouseController::class, 'index'])->name('pharmacy.warehouses.index');
 
+    //عرض ادوية مستودع معين او الروشور
+    Route::get('/warehouse/{warehouseId}', [WarehouseController::class, 'show'])->name('pharmacy.warehouses.show');
+    //اضافة عناصر الى السلة والتحكم بها
+    Route::post('/cart/add-multiple', [CartController::class, 'addMultiple'])->name('pharmacy.cart.addMultiple');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('pharmacy.cart.update');
+    Route::post('/cart/remove', [CartController::class, 'remove'])->name('pharmacy.cart.remove');
+    Route::get('/cart', [CartController::class, 'show'])->name('pharmacy.cart.show');
 
+    //ارسال الطلبية الى المستودع
+    Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('pharmacy.cart.checkout');
+
+    // عرض جميع طلبيات الصيدلي
+    Route::get('/orders', [PharmacyOrderController::class, 'index'])->name('pharmacy.orders.index');
+    Route::get('/orders/{order}', [PharmacyOrderController::class, 'show'])->name('pharmacy.orders.show');
+    Route::delete('/orders/{order}', [PharmacyOrderController::class, 'destroy'])->name('pharmacy.orders.destroy');
+    //الدين للمستودعات
+    Route::get('/balance', [PaymentController::class, 'pharmacyBalance'])->name('pharmacy.balance');
+
+    //اعدادات الموقع
+    Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('pharmacy.settings.cities');
+    Route::patch('/settings/cities', [SettingsController::class, 'updateCities'])->name('pharmacy.settings.updateCities');
+    Route::post('/location/store', [SettingsController::class, 'store'])->name('location.store');
+
+        //اعدادات الحساب بالصيدلية
+        Route::get('/settings/account', [ProfileController::class, 'edit'])->name('pharmacy.settings.account');
+
+    //الخدمة العاجلة
+    Route::get('/UrgentOrder', [UrgentOrderController::class, 'create'])->name('pharmacy.urgentorder.create');
+    Route::post('/UrgentOrder/store/', [UrgentOrderController::class, 'store'])->name('pharmacy.urgentorder.store');
+});
 
 
 

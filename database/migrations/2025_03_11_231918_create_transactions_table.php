@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id(); // معرف المعاملة
             $table->foreignId('account_id')->constrained('accounts')->onDelete('cascade'); // معرف الحساب
             $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null'); // معرف الطلب (اختياري)
-            $table->decimal('amount', 8, 2); // قيمة المعاملة
+            $table->decimal('amount', 8, 2)->default(0.00); // قيمة المعاملة
             $table->enum('type', ['payment', 'debt']); // نوع المعاملة (دفع أو دين)
             $table->timestamps(); // تواريخ الإنشاء والتحديث
         });

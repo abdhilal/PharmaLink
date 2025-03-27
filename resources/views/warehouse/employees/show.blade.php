@@ -5,7 +5,7 @@
     <h5 class="card-header">تفاصيل الموظف: {{ $employee->name }}</h5>
     <div class="card-body">
         <p><strong>المنصب:</strong> {{ $employee->position }}</p>
-        <p><strong>الراتب:</strong> {{ number_format($employee->salary, 2) }} ريال</p>
+        <p><strong>الراتب:</strong> {{ number_format($employee->salary, 2) }} $</p>
         <p><strong>تاريخ التوظيف:</strong> {{ $employee->date }}</p>
         <p><strong>الحالة:</strong> {{ $employee->status === 'active' ? 'نشط' : 'غير نشط' }}</p>
         <p><strong>الهاتف:</strong> {{ $employee->phone ?? 'غير متوفر' }}</p>

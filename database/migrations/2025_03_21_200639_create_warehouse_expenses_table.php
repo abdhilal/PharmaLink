@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('warehouse_expenses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('cascade');
-            $table->decimal('amount', 8, 2); // المبلغ
+            $table->decimal('amount', 8, 2)->default(0.00); // المبلغ
             $table->date('date'); // تاريخ المصروف
             $table->text('note')->nullable(); // ملاحظات اختيارية
             $table->timestamps();

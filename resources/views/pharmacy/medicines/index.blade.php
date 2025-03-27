@@ -28,7 +28,7 @@
                                     <input type="checkbox" name="items[{{ $medicine->id }}][medicine_id]" value="{{ $medicine->id }}">
                                 </td>
                                 <td>{{ $medicine->name }}</td>
-                                <td>{{ number_format($medicine->price, 2) }} SAR</td>
+                                <td>{{ number_format($medicine->selling_price, 2) }} SAR</td>
                                 <td>{{ $medicine->quantity }}</td>
                                 <td>{{ $medicine->offer ?? 'None' }}</td>
                                 <td>

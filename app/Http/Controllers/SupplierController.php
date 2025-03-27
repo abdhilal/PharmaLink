@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SupplierController extends Controller
 {
@@ -12,7 +13,8 @@ class SupplierController extends Controller
      */
     public function index()
     {
-        $suppliers=Supplier::all();
+        $suppliers=Supplier::where('warehouse_id',Auth::user()->warehouse->id)->get();
+
         return view('warehouse.supply.index',compact('suppliers'));
     }
 

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('cascade');
             $table->enum('transaction_type', ['income', 'expense']); // نوع الحركة: دخل أو مصروف
-            $table->decimal('amount', 8, 2); // المبلغ
-            $table->string('description', 255); // الوصف (مثل: "مصروف إيجار"، "دفعة طلبية")
-            $table->date('date'); // تاريخ الحركة
+            $table->decimal('amount', 8, 2)->default(0.00); // المبلغ
+            $table->string('description', 255)->nullable(); // الوصف (مثل: "مصروف إيجار"، "دفعة طلبية")
+            $table->date('date')->nullable(); // تاريخ الحركة
             $table->unsignedBigInteger('related_id')->nullable(); // معرف العنصر المرتبط (اختياري)
             $table->string('related_type')->nullable(); // نوع العنصر المرتبط (مثل: expense)
             $table->timestamps();

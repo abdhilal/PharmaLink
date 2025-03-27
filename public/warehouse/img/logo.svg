@@ -1,0 +1,14 @@
+<svg width="180" height="28.8" viewBox="0 0 150 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- الأيقونة المعدلة -->
+  <g>
+    <!-- مسار علوي محسّن -->
+    <path d="M8 12a4 4 0 0 0 6.5.5l2.5-2.5a4 4 0 0 0-5.66-5.66L9.5 6" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- مسار سفلي محسّن -->
+    <path d="M12 12a4 4 0 0 0-6.5-.5L3 14a4 4 0 0 0 5.66 5.66L10.5 18" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- دائرة صغيرة لإضفاء لمسة احترافية -->
+    <circle cx="10" cy="12" r="1" fill="#3B82F6"/>
+  </g>
+
+  <!-- النص بجانب الأيقونة -->
+  <text x="25" y="17" font-size="16" fill="#000000" font-family="Inter, sans-serif" font-weight="bold">PharmaLink</text>
+</svg>

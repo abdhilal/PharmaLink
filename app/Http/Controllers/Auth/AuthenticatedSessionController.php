@@ -28,7 +28,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('warehouse.dashboard', absolute: false));
+        if(Auth::user()->role=='warehouse'){
+
+            return redirect(route('warehouse.dashboard', absolute: false));
+
+        }
+        else{
+
+            return redirect(route('pharmacy.warehouses.index', absolute: false));
+
+        }
+
     }
 
     /**

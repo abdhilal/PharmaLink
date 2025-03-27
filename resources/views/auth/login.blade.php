@@ -85,7 +85,7 @@
 <body>
     <header>
         <nav class="navbar">
-            <div class="logo"><img src="{{ asset('assets/images/logo.svg') }}" alt="Trafalgar"></div>
+            <div class=""><img src="{{asset('warehouse/img/logo.svg')}}" alt="PharmaLink"></div>
             <div class="menu-icon">
                 <div class="line1"></div>
                 <div class="line2"></div>
@@ -105,6 +105,8 @@
 
     <section class="login-section">
         <div class="login-container">
+            <div class=""><img src="{{asset('warehouse/img/logo.svg')}}" alt="PharmaLink"></div>
+
             <h2 class="login-title">Login to Your Account</h2>
             <form class="login-form" action="{{ route('login') }}" method="POST">
                 @csrf
@@ -117,42 +119,33 @@
     </section>
 
     <footer class="footer-section">
-        <div class="container footer-container">
+        <div class="footer-container">
             <div class="footer-brand">
-                <h2 class="footer-logo">Trafalgar</h2>
+                <h2 class="footer-logo">PharmaLink</h2>
                 <p class="footer-description">
-                    Trafalgar provides progressive, and affordable healthcare, accessible on mobile and online for everyone
+                    PharmaLink تقدم حلولاً متطورة لإدارة الصيدليات والمستودعات بسهولة وكفاءة عالية.
                 </p>
                 <p class="footer-copyright">
-                    ©Trafalgar PTY LTD 2020. All rights reserved
+                    © PharmaLink 2025. جميع الحقوق محفوظة.
                 </p>
             </div>
-            <div class="footer-links">
+
                 <div class="footer-column">
-                    <h3 class="footer-heading">Company</h3>
+                    <h3 class="footer-heading">المنصة</h3>
                     <ul class="footer-list">
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Testimonials</a></li>
-                        <li><a href="#">Find a doctor</a></li>
-                        <li><a href="#">Apps</a></li>
+                        <li><a href="#">عن المنصة</a></li>
+                        <li><a href="#">الصيدليات</a></li>
+                        <li><a href="#">الأدوية</a></li>
+                        <li><a href="#">الموردون</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
-                    <h3 class="footer-heading">Region</h3>
+                    <h3 class="footer-heading">الدعم</h3>
                     <ul class="footer-list">
-                        <li><a href="#">Indonesia</a></li>
-                        <li><a href="#">Singapore</a></li>
-                        <li><a href="#">Hongkong</a></li>
-                        <li><a href="#">Canada</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3 class="footer-heading">Help</h3>
-                    <ul class="footer-list">
-                        <li><a href="#">Help center</a></li>
-                        <li><a href="#">Contact support</a></li>
-                        <li><a href="#">Instructions</a></li>
-                        <li><a href="#">How it works</a></li>
+                        <li><a href="#">مركز المساعدة</a></li>
+                        <li><a href="#">اتصل بنا</a></li>
+                        <li><a href="#">الأسئلة الشائعة</a></li>
+                        <li><a href="#">كيفية العمل</a></li>
                     </ul>
                 </div>
             </div>
