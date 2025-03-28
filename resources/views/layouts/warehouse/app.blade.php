@@ -45,6 +45,22 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 
+<style>
+.table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+}
+.btn-sm {
+    padding: 0.35rem 0.75rem;
+}
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+.bg-primary {
+    background-color: #3B82F6 !important;
+}</style>
+
   <body>
 
     <!-- Layout wrapper -->

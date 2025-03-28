@@ -127,6 +127,9 @@
                 <li class="menu-item">
                     <a class="menu-link" href="{{ route('warehouse.employees.index') }}"><div class="text-truncate" data-i18n="Cities">الموظفون</div></a>
                 </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ route('warehouse.staff.index') }}"><div class="text-truncate" data-i18n="Cities">المندوبين</div></a>
+                </li>
             </ul>
         </li>
 

@@ -9,11 +9,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next,$role)
     {
-        // التحقق مما إذا كان المستخدم مسجل الدخول وله دور "admin"
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
-            return redirect('/home')->with('error', 'غير مصرح لك بالوصول.');
+      if (!$request->user() || !$request->user()->hasRole($role)) {
+            abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
         }
 
         return $next($request);

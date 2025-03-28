@@ -47,6 +47,7 @@ class RegisteredUserController extends Controller
             'role' => $request->role,
         ]);
         if ($request->role == 'warehouse') {
+            $user->assignRole($request->role);
             $warehouse = Warehouse::create([
                 'user_id' => $user->id,
 

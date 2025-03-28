@@ -15,10 +15,14 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\PharmacyOrderController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Staff\OrderController as StaffOrderController;
 use App\Http\Controllers\UrgentOrderController;
 use App\Http\Controllers\WarehouseMedicineController;
 use App\Http\Controllers\WarehouseController;
 use App\Models\SupplierPayment;
+use App\Http\Controllers\StaffController;
+
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -62,7 +66,7 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     Route::get('/settings/account', [ProfileController::class, 'edit'])->name('warehouse.settings.account');
 
     //الاشعارات بس لسع مو شغالة
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('warehouse.notifications');
+    // Route::get('/notifications', [NotificationController::class, 'index'])->name('warehouse.notifications');
 
     //اعدادات الموقع
     Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('warehouse.settings.cities');
@@ -93,6 +97,7 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     //ادارة الطلبيات والتحكم بها كمان
     Route::get('/orders/create-manual', [OrderController::class, 'createManual'])->name('warehouse.orders.create_manual');
     Route::post('/orders/store-manual', [OrderController::class, 'storeManual'])->name('warehouse.orders.store_manual');
+
     Route::get('/orders', [OrderController::class, 'index'])->name('warehouse.orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('warehouse.orders.show');
     Route::post('/orders/{order}/approve', [OrderController::class, 'approve'])->name('warehouse.orders.approve');
@@ -109,7 +114,7 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
 
     // اخذ او قبول الطلبية
     Route::post('/urgentorders/{id}/approve', [UrgentOrderController::class, 'approve'])->name('warehouse.urgentorder.approve');
-    Route::post('/orders/store-manual', [UrgentOrderController::class, 'storeManual'])->name('warehouse.urgentorder.store_manual');
+    Route::post('/urgentorders/store-manual', [UrgentOrderController::class, 'storeManual'])->name('warehouse.urgentorder.store_manual');
 
 
 
@@ -138,6 +143,32 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     Route::get('/payments/create/{pharmacyId}', [PaymentController::class, 'createPayment'])->name('warehouse.payments.create');
     Route::post('/payments/store/{pharmacyId}', [PaymentController::class, 'storePayment'])->name('warehouse.payments.store');
 });
+
+
+
+
+
+//طلبيات بيد المناديبب لتسليم الطلبيات لم يجهز بعد
+Route::prefix('staff')->middleware(['auth'])->group(function () {
+
+    Route::get('/orders', [StaffOrderController::class, 'index'])->name('staff.orders.index');
+    Route::patch('/orders/{order}/deliver', [StaffOrderController::class, 'deliver'])->name('staff.orders.deliver');
+});
+
+
+
+//التحكم في موظفين المناديب
+
+Route::prefix('warehouse')->middleware(['auth', 'role:warehouse'])->group(function () {
+
+    Route::get('/staff', [StaffController::class, 'index'])->name('warehouse.staff.index');
+    Route::get('/staff/create', [StaffController::class, 'create'])->name('warehouse.staff.create');
+    Route::post('/staff', [StaffController::class, 'store'])->name('warehouse.staff.store');
+    Route::get('/staff/{staff}/edit', [StaffController::class, 'edit'])->name('warehouse.staff.edit');
+    Route::put('/staff/{staff}', [StaffController::class, 'update'])->name('warehouse.staff.update');
+    Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->name('warehouse.staff.destroy');
+});
+
 
 
 
@@ -175,14 +206,13 @@ Route::middleware(['pharmacy'])->prefix('pharmacy')->group(function () {
     Route::patch('/settings/cities', [SettingsController::class, 'updateCities'])->name('pharmacy.settings.updateCities');
     Route::post('/location/store', [SettingsController::class, 'store'])->name('location.store');
 
-        //اعدادات الحساب بالصيدلية
-        Route::get('/settings/account', [ProfileController::class, 'edit'])->name('pharmacy.settings.account');
+    //اعدادات الحساب بالصيدلية
+    Route::get('/settings/account', [ProfileController::class, 'edit'])->name('pharmacy.settings.account');
 
     //الخدمة العاجلة
     Route::get('/UrgentOrder', [UrgentOrderController::class, 'create'])->name('pharmacy.urgentorder.create');
     Route::post('/UrgentOrder/store/', [UrgentOrderController::class, 'store'])->name('pharmacy.urgentorder.store');
 });
-
 
 
 

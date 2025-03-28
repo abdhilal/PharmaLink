@@ -109,7 +109,7 @@ class CartController extends Controller
 
             foreach ($items as $item) {
                 $medicine = Medicine::findOrFail($item['medicine_id']); // جلب الدواء
-                $pricePerUnit = $item['price_per_unit'] ?? $medicine->price; // استخدام السعر من Medicine إذا لم يكن موجودًا
+                $pricePerUnit = $item['price_per_unit'] ?? $medicine->price;
 
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -122,6 +122,9 @@ class CartController extends Controller
 
 
         }
+
+
+
 
         session()->forget('cart');
         return redirect()->route('pharmacy.orders.index')->with('success', 'Order placed successfully.');
