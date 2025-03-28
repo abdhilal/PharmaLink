@@ -7,18 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Medicine extends Model
 {
     protected $fillable = [
-        'warehouse_id',
-        'company_id',
         'name',
+        'scientific_name',
+        'category_id',
+        'manufacturer_id',
         'price',
         'quantity',
-        'date',
-        'barcode',
-        'offer',
-        'discount_percentage', // نسبة الحسم
-        'profit_percentage', // نسبة الربح
-        'selling_price', // سعر البيع
-        'is_hidden'
+        'min_quantity',
+        'expiry_date',
+        'description'
+    ];
+
+    protected $casts = [
+        'expiry_date' => 'date',
+        'price' => 'decimal:2'
     ];
 
     public function warehouse()
@@ -37,8 +39,7 @@ class Medicine extends Model
     }
 
     public function supplyOrderItems()
-{
-    return $this->hasMany(SupplyOrderItem::class);
-}
-
+    {
+        return $this->hasMany(SupplyOrderItem::class);
+    }
 }

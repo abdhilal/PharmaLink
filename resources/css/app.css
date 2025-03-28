@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* الوضع النهاري */
+:root {
+    --primary-bg: #ffffff;
+    --secondary-bg: #f9fafb;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --border-color: #e5e7eb;
+}
+
+/* الوضع الليلي */
+.dark {
+    --primary-bg: #1f2937;
+    --secondary-bg: #111827;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --border-color: #374151;
+}
+
+/* تنسيقات عامة */
+body {
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* تنسيقات البطاقات */
+.card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300;
+}
+
+/* تنسيقات الأزرار */
+.btn-primary {
+    @apply bg-indigo-600 hover:bg-indigo-700 text-white;
+}
+
+.btn-secondary {
+    @apply bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white;
+}
+
+/* تنسيقات الجداول */
+table {
+    @apply w-full;
+}
+
+th {
+    @apply px-4 py-3 text-right bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300;
+}
+
+td {
+    @apply px-4 py-3 text-gray-900 dark:text-gray-100 border-b dark:border-gray-700;
+}
+
+tr:hover {
+    @apply bg-gray-50 dark:bg-gray-700;
+}
+
+/* تنسيقات النماذج */
+input, select, textarea {
+    @apply bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg;
+}
+
+input:focus, select:focus, textarea:focus {
+    @apply ring-2 ring-indigo-500 dark:ring-indigo-400 border-transparent;
+}
+
+/* تنسيقات الإشعارات */
+.notification {
+    @apply flex items-start gap-4 p-3 rounded-lg transition-all duration-300;
+}
+
+.notification-unread {
+    @apply bg-blue-50 dark:bg-blue-900;
+}
+
+.notification-read {
+    @apply bg-gray-50 dark:bg-gray-800;
+}

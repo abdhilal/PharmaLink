@@ -15,14 +15,20 @@ use Mockery\Generator\StringManipulation\Pass\Pass;
 
 class WarehouseMedicineController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $warehouse = auth()->user()->warehouse;
-        $medicines = Medicine::where('warehouse_id', $warehouse->id)
-            ->with('company')
-            ->orderBy('company_id') // ترتيب حسب الشركة أولاً
+        $query = Medicine::where('warehouse_id', $warehouse->id)
+            ->with('company');
+
+        // تطبيق فلتر الأدوية منخفضة الكمية
+        if ($request->has('filter') && $request->filter === 'low_stock') {
+            $query->where('quantity', '<=', 'min_quantity');
+        }
+
+        $medicines = $query->orderBy('company_id')
             ->get()
-            ->groupBy('company.name'); // تجميع حسب اسم الشركة
+            ->groupBy('company.name');
 
         $expiringMedicines = Medicine::where('warehouse_id', $warehouse->id)
             ->where(function ($query) {
