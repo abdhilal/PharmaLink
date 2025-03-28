@@ -36,8 +36,8 @@
                                 <li class="text-center text-muted">لا توجد أدوية منخفضة الكمية</li>
                             @endforelse
                         </ul>
-                        <a href="{{ route('warehouse.medicines.index') }}" class="btn btn-outline-primary mt-4 w-100">
-                            <i class="fas fa-list me-2"></i> عرض جميع الأدوية
+                        <a href="{{ route('warehouse.medicines.index') }}?filter=low_stock" class="btn btn-outline-primary mt-4 w-100">
+                            <i class="fas fa-list me-2"></i> عرض جميع الأدوية منخفضة الكمية
                         </a>
                     </div>
                 </div>

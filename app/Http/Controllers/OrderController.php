@@ -8,9 +8,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Notifications\NewOrderNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 class OrderController extends Controller
 {
@@ -326,6 +328,10 @@ class OrderController extends Controller
             $order->update([
                 'total_price' => $totalPrice,
             ]);
+
+            // إرسال إشعار للمستودع
+            $warehouse = $order->warehouse;
+            $warehouse->notify(new NewOrderNotification($order));
         });
 
         return redirect()->route('warehouse.orders.index')->with('success', 'تم إنشاء الطلبية اليدوية بنجاح.');

@@ -23,12 +23,36 @@ use App\Models\SupplierPayment;
 use App\Http\Controllers\StaffController;
 
 
+use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\MedicineExpiryController;
+use App\Http\Controllers\InventoryPredictionController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+// Loyalty System Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/loyalty', [LoyaltyController::class, 'index'])->name('loyalty.index');
+    Route::get('/loyalty/{user}', [LoyaltyController::class, 'show'])->name('loyalty.show');
+    Route::post('/loyalty/{user}/points', [LoyaltyController::class, 'addPoints'])->name('loyalty.add-points');
+});
+
+// Medicine Expiry Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/medicine-expiry', [MedicineExpiryController::class, 'index'])->name('medicine-expiry.index');
+    Route::get('/medicine-expiry/expired', [MedicineExpiryController::class, 'expired'])->name('medicine-expiry.expired');
+    Route::post('/medicine-expiry', [MedicineExpiryController::class, 'store'])->name('medicine-expiry.store');
+});
+
+// Inventory Prediction Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/inventory-prediction', [InventoryPredictionController::class, 'index'])->name('inventory-prediction.index');
+    Route::post('/inventory-prediction/generate', [InventoryPredictionController::class, 'generate'])->name('inventory-prediction.generate');
+    Route::get('/inventory-prediction/{medicine}', [InventoryPredictionController::class, 'show'])->name('inventory-prediction.show');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -36,12 +60,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 Route::get('/', function () {
     return  view('welcome');
 })->name('home');
-
-
 
 Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
 
@@ -76,6 +97,14 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     //التقارير المالية
     Route::get('/financial-report', [ReportController::class, 'financialReport'])->name('warehouse.financial_report');
 
+    // تقارير المستودع
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('warehouse.reports.index');
+        Route::get('/sales', [ReportController::class, 'salesReport'])->name('warehouse.reports.sales');
+        Route::get('/inventory', [ReportController::class, 'inventoryReport'])->name('warehouse.reports.inventory');
+        Route::get('/pharmacy/{pharmacy}', [ReportController::class, 'pharmacyReport'])->name('warehouse.reports.pharmacy');
+    });
+
     //الموردين
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('warehouse.suppliers.index');
     Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('warehouse.suppliers.create');
@@ -92,8 +121,6 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     Route::delete('/supply-orders/{supplyOrder}/destroy', [SupplyOrderController::class, 'destroy'])->name('warehouse.supply_order.destroy');
     Route::post('/supply-orders/{supplyOrder}', [SupplyOrderController::class, 'update'])->name('warehouse.supply_order.update');
 
-
-
     //ادارة الطلبيات والتحكم بها كمان
     Route::get('/orders/create-manual', [OrderController::class, 'createManual'])->name('warehouse.orders.create_manual');
     Route::post('/orders/store-manual', [OrderController::class, 'storeManual'])->name('warehouse.orders.store_manual');
@@ -106,8 +133,6 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('warehouse.orders.destroy');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('warehouse.orders.cancel');
 
-
-
     //طلبيات الخدمة العاجلة
     Route::get('/urgentorders', [UrgentOrderController::class, 'index'])->name('warehouse.urgentorder.index');
     Route::get('/urgentorders/{id}/pharmacy/{pharmacy}', [UrgentOrderController::class, 'show'])->name('warehouse.urgentorder.show');
@@ -115,8 +140,6 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     // اخذ او قبول الطلبية
     Route::post('/urgentorders/{id}/approve', [UrgentOrderController::class, 'approve'])->name('warehouse.urgentorder.approve');
     Route::post('/urgentorders/store-manual', [UrgentOrderController::class, 'storeManual'])->name('warehouse.urgentorder.store_manual');
-
-
 
     //والمصاريف
     Route::get('/expenses', [ExpenseController::class, 'index'])->name('warehouse.expenses.index');
@@ -134,7 +157,6 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('warehouse.employees.destroy');
     //دفع راتب موظف
     Route::post('/employees/{employee}/pay', [EmployeeController::class, 'paySalary'])->name('warehouse.employees.pay');
-
 
     //عرض الصيدليات وتسحيل دفعات منهم
     Route::get('/pharmacies', [PharmacyController::class, 'index'])->name('warehouse.pharmacies.index');
@@ -176,7 +198,6 @@ Route::prefix('warehouse')->middleware(['auth', 'role:warehouse'])->group(functi
 
 
 //طرف الصيدلي
-
 
 Route::middleware(['pharmacy'])->prefix('pharmacy')->group(function () {
 
@@ -224,5 +245,13 @@ Route::middleware(['pharmacy'])->prefix('pharmacy')->group(function () {
 
 
 
+// Notification Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::post('/notifications/clear', [NotificationController::class, 'clear'])->name('notifications.clear');
+    Route::post('/notifications/settings', [NotificationController::class, 'updateSettings'])->name('notifications.settings');
+});
 
 require __DIR__ . '/auth.php';

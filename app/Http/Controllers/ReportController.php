@@ -9,9 +9,12 @@ use App\Models\WarehouseCash;
 use App\Models\WarehouseExpense;
 use App\Models\EmployeePayment;
 use App\Models\SupplierPayment;
+use App\Models\Medicine;
+use App\Models\Pharmacy;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -79,6 +82,162 @@ class ReportController extends Controller
             'supplierDebts',
             'totalDiscounts',
             'netProfit',
+            'startDate',
+            'endDate'
+        ));
+    }
+
+    public function index()
+    {
+        // إحصائيات عامة
+        $totalSales = Order::whereYear('created_at', Carbon::now()->year)->sum('total');
+        $totalOrders = Order::count();
+        $activePharmacies = Pharmacy::has('orders')->count();
+
+        // أكثر الأدوية مبيعاً
+        $topMedicines = Medicine::select('medicines.*', DB::raw('SUM(order_items.quantity) as total_sold'))
+            ->join('order_items', 'medicines.id', '=', 'order_items.medicine_id')
+            ->groupBy('medicines.id')
+            ->orderByDesc('total_sold')
+            ->limit(10)
+            ->get();
+
+        // تقارير المبيعات الشهرية
+        $monthlySales = Order::select(
+            DB::raw('YEAR(created_at) as year'),
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('SUM(total) as total_sales'),
+            DB::raw('COUNT(*) as order_count')
+        )
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->limit(12)
+            ->get();
+
+        // أداء الصيدليات
+        $pharmacyPerformance = Pharmacy::select(
+            'pharmacies.*',
+            DB::raw('COUNT(orders.id) as total_orders'),
+            DB::raw('SUM(orders.total) as total_spent')
+        )
+            ->leftJoin('orders', 'pharmacies.id', '=', 'orders.pharmacy_id')
+            ->groupBy('pharmacies.id')
+            ->orderByDesc('total_spent')
+            ->limit(10)
+            ->get();
+
+        // حركة المخزون
+        $lowStock = Medicine::where('quantity', '<=', 'min_quantity')
+            ->orderBy('quantity')
+            ->limit(10)
+            ->get();
+
+        return view('warehouse.reports.index', compact(
+            'totalSales',
+            'totalOrders',
+            'activePharmacies',
+            'topMedicines',
+            'monthlySales',
+            'pharmacyPerformance',
+            'lowStock'
+        ));
+    }
+
+    public function salesReport(Request $request)
+    {
+        $period = $request->input('period', 'monthly');
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth());
+        $endDate = $request->input('end_date', Carbon::now());
+
+        $query = Order::whereBetween('created_at', [$startDate, $endDate]);
+
+        $sales = match ($period) {
+            'daily' => $query->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(total) as total_sales'),
+                DB::raw('COUNT(*) as order_count')
+            )
+                ->groupBy('date')
+                ->orderBy('date'),
+            'monthly' => $query->select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total) as total_sales'),
+                DB::raw('COUNT(*) as order_count')
+            )
+                ->groupBy('year', 'month')
+                ->orderBy('year')
+                ->orderBy('month'),
+            'yearly' => $query->select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('SUM(total) as total_sales'),
+                DB::raw('COUNT(*) as order_count')
+            )
+                ->groupBy('year')
+                ->orderBy('year'),
+            default => $query->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(total) as total_sales'),
+                DB::raw('COUNT(*) as order_count')
+            )
+                ->groupBy('date')
+                ->orderBy('date'),
+        };
+
+        $sales = $sales->get();
+
+        return view('warehouse.reports.sales', compact('sales', 'period', 'startDate', 'endDate'));
+    }
+
+    public function inventoryReport()
+    {
+        $medicines = Medicine::select(
+            'medicines.*',
+            DB::raw('(SELECT SUM(quantity) FROM order_items WHERE medicine_id = medicines.id) as total_sold')
+        )
+            ->withCount(['orderItems as monthly_sales' => function ($query) {
+                $query->whereMonth('created_at', Carbon::now()->month);
+            }])
+            ->get();
+
+        return view('warehouse.reports.inventory', compact('medicines'));
+    }
+
+    public function pharmacyReport(Request $request, Pharmacy $pharmacy)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->subMonths(6));
+        $endDate = $request->input('end_date', Carbon::now());
+
+        $orders = $pharmacy->orders()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalSpent = $orders->sum('total');
+        $averageOrderValue = $orders->avg('total');
+        $orderCount = $orders->count();
+
+        $mostOrderedMedicines = Medicine::select(
+            'medicines.*',
+            DB::raw('SUM(order_items.quantity) as total_quantity'),
+            DB::raw('COUNT(DISTINCT orders.id) as order_count')
+        )
+            ->join('order_items', 'medicines.id', '=', 'order_items.medicine_id')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.pharmacy_id', $pharmacy->id)
+            ->groupBy('medicines.id')
+            ->orderByDesc('total_quantity')
+            ->limit(10)
+            ->get();
+
+        return view('warehouse.reports.pharmacy', compact(
+            'pharmacy',
+            'orders',
+            'totalSpent',
+            'averageOrderValue',
+            'orderCount',
+            'mostOrderedMedicines',
             'startDate',
             'endDate'
         ));
