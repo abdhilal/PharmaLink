@@ -66,7 +66,7 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     Route::get('/settings/account', [ProfileController::class, 'edit'])->name('warehouse.settings.account');
 
     //الاشعارات بس لسع مو شغالة
-    // Route::get('/notifications', [NotificationController::class, 'index'])->name('warehouse.notifications');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('warehouse.notifications');
 
     //اعدادات الموقع
     Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('warehouse.settings.cities');
