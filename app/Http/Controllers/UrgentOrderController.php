@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NotificationEvent;
 use App\Models\City;
 use App\Models\Medicine;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\UrgentOrder;
@@ -18,7 +20,7 @@ class UrgentOrderController extends Controller
 
     public function index()
     {
-         $orders = UrgentOrder::with('items', 'user.city')->where('status', 'pending')->get();
+        $orders = UrgentOrder::with('items', 'user.city')->where('status', 'pending')->get();
         // موقع الصيدلية الحالية
 
         if ($orders->isNotEmpty()) {
@@ -74,19 +76,25 @@ class UrgentOrderController extends Controller
 
                     return false;
                 });
-                $urgentorders[] = $order ;
+                $urgentorders[] = $order;
+
+
             }
 
+
+
+
+
+
+
+
             return view('warehouse.urgentorders.index', compact('urgentorders'));
-
-        }else{
-            $urgentorders=false;
+        } else {
+            $urgentorders = false;
 
 
             return view('warehouse.urgentorders.index', compact('urgentorders'));
-
         }
-
     }
 
     public function show($orderId, $pharmacyId)
@@ -105,21 +113,21 @@ class UrgentOrderController extends Controller
 
     public function store(Request $request)
     {
-        // التحقق من صحة البيانات
+
         $request->validate([
-            'items' => 'required|array|min:1', // تأكد من أن `items` موجودة وهي مصفوفة
+            'items' => 'required|array|min:1',
             'items.*.name' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        // إنشاء الطلبية الرئيسية
+
         $order = UrgentOrder::create([
             'pharmacy_id' => Auth::id(),
             'note' => $request->note,
             'status' => 'pending',
         ]);
 
-        // إضافة العناصر إلى جدول urgent_order_items
+
         foreach ($request->items as $item) {
             $order->items()->create([
                 'name' => $item['name'],
@@ -139,13 +147,13 @@ class UrgentOrderController extends Controller
         $order->status = 'ready';
         $order->save();
         $pharmacy_id = $order->pharmacy_id;
-        // جلب الأدوية المتاحة في المستودع
+
         $medicines = Medicine::where('warehouse_id', Auth::user()->warehouse->id)
 
             ->where('quantity', '>', 0)
             ->get();
 
-        return view('warehouse.urgentorders.create', compact('pharmacy_id', 'medicines','order'));
+        return view('warehouse.urgentorders.create', compact('pharmacy_id', 'medicines', 'order'));
     }
 
 

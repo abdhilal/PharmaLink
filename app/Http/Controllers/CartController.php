@@ -1,10 +1,14 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Events\NotificationEvent;
 use App\Models\Medicine;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 //كتابة منطق أولي لحساب الفواتير في السلة مع تطبيق العروض
 class CartController extends Controller
@@ -30,28 +34,26 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
 
         foreach ($request->items as $item) {
-            if($item['quantity']>0 ){
+            if ($item['quantity'] > 0) {
 
-            $medicine = Medicine::findOrFail($item['medicine_id']);
-
-
-            $subtotal = $medicine->selling_price * $item['quantity'];
+                $medicine = Medicine::findOrFail($item['medicine_id']);
 
 
+                $subtotal = $medicine->selling_price * $item['quantity'];
 
-            $cart[$request->warehouse_id][$medicine->id] = [
-                'medicine_id' => $medicine->id,
-                'quantity' => $item['quantity'],
-                'subtotal' => $subtotal,
-            ];
-        }
 
+
+                $cart[$request->warehouse_id][$medicine->id] = [
+                    'medicine_id' => $medicine->id,
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $subtotal,
+                ];
+            }
         }
 
         session()->put('cart', $cart);
 
         return redirect()->route('pharmacy.cart.show')->with('success', 'Medicines added to cart.');
-
     }
     // عرض السلة
     public function show()
@@ -70,7 +72,7 @@ class CartController extends Controller
                 $medicine = Medicine::find($item['medicine_id']);
                 $subtotal = $item['subtotal'];
 
-                $pricePerUnit =$medicine->selling_price;
+                $pricePerUnit = $medicine->selling_price;
 
                 $invoiceItems[] = [
                     'medicine' => $medicine,
@@ -120,10 +122,22 @@ class CartController extends Controller
                 ]);
             }
 
-
+            $user_id = $warehouseId;
+            $order_id = $order->id;
         }
 
+        $message = "طلبية جديدة من : " . Auth::user()->name;
 
+
+        Notification::create([
+            'message' => $message,
+            'user_id' => $user_id,
+            'order_id' => $order_id,
+            'read_at' => null
+
+        ]);
+
+        event(new NotificationEvent($message, $user_id, $order_id));
 
 
         session()->forget('cart');
@@ -173,20 +187,19 @@ class CartController extends Controller
         return back()->with('success', 'Cart updated successfully.');
     }
 
-public function remove(Request $request)
-{
-    $request->validate([
-        'medicine_id' => 'required|exists:medicines,id',
-        'warehouse_id' => 'required|exists:warehouses,id',
-    ]);
+    public function remove(Request $request)
+    {
+        $request->validate([
+            'medicine_id' => 'required|exists:medicines,id',
+            'warehouse_id' => 'required|exists:warehouses,id',
+        ]);
 
-    $cart = session()->get('cart', []);
-    unset($cart[$request->warehouse_id][$request->medicine_id]);
-    if (empty($cart[$request->warehouse_id])) {
-        unset($cart[$request->warehouse_id]);
+        $cart = session()->get('cart', []);
+        unset($cart[$request->warehouse_id][$request->medicine_id]);
+        if (empty($cart[$request->warehouse_id])) {
+            unset($cart[$request->warehouse_id]);
+        }
+        session()->put('cart', $cart);
+        return back()->with('success', 'Item removed from cart.');
     }
-    session()->put('cart', $cart);
-    return back()->with('success', 'Item removed from cart.');
-}
-
 }

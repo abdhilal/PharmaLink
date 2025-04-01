@@ -1,4 +1,3 @@
-<!-- resources/views/warehouse/location.blade.php -->
 @extends('layouts.warehouse.app')
 
 @section('title', 'تحديد الموقع ونطاق الخدمة')
@@ -11,7 +10,7 @@
             <p class="text-light mb-0">يرجى تحديد موقعك لكي تظهر للصيدليات ضمن نطاق خدمتك</p>
         </div>
         <div class="card-body">
-            <form action="{{ route('location.store') }}" method="POST">
+            <form action="{{ route('warehouse.location.store') }}" method="POST">
                 @csrf
 
                 <!-- اسم المدينة -->

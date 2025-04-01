@@ -12,7 +12,7 @@
             <p class=" mb-0 " style="color: #333" >يرجى تحديد موقعك للحصول على المستودعات التي تخدم منطقتك</p>
         </div>
         <div class="card-body">
-            <form action="{{ route('location.store') }}" method="POST">
+            <form action="{{ route('pharmacy.location.store') }}" method="POST">
                 @csrf
 
                 <!-- اسم المدينة -->

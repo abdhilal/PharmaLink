@@ -42,10 +42,11 @@ class SettingsController extends Controller
     public function store(Request $request)
     {
 
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
             'range_east' => 'nullable|numeric|min:0',
             'range_west' => 'nullable|numeric|min:0',
             'range_north' => 'nullable|numeric|min:0',
@@ -83,5 +84,5 @@ class SettingsController extends Controller
     }
 
 
-  
+
 }

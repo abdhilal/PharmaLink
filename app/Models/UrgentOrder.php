@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UrgentOrder extends Model
 {
-    protected $fillable = ['pharmacy_id', 'note', 'status'];
+    protected $fillable = ['pharmacy_id', 'note', 'status','warehouse_id'];
 
     public function items()
     {

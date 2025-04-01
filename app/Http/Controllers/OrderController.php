@@ -92,7 +92,7 @@ class OrderController extends Controller
         $order = Order::with('items.medicine')->findOrFail($orderId);
 
 
-     
+
 
         $medicines = Medicine::where('warehouse_id', Auth::user()->warehouse->id)
             ->with('company')

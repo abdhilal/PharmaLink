@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('urgent_orders', function (Blueprint $table) {
+        Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->integer('pharmacy_id');
-            $table->string('note')->nullable();
-            $table->enum('status', ['pending', 'ready', 'cancelled'])->default('pending');
-
+            $table->string('user_id');
+            $table->string('order_id');
+            $table->string('message');
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('urgent_orders');
+        Schema::dropIfExists('notifications');
     }
 };

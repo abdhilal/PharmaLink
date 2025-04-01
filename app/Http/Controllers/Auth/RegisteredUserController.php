@@ -52,6 +52,7 @@ class RegisteredUserController extends Controller
                 'user_id' => $user->id,
 
             ]);
+            
             WarehouseCash::create(['warehouse_id' => $warehouse->id]);
         }
         event(new Registered($user));

@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\NotificationEvent;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\OrderController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\SupplyOrderController;
 use App\Http\Controllers\CashController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PharmacyOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Staff\OrderController as StaffOrderController;
@@ -21,8 +23,7 @@ use App\Http\Controllers\WarehouseMedicineController;
 use App\Http\Controllers\WarehouseController;
 use App\Models\SupplierPayment;
 use App\Http\Controllers\StaffController;
-
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -66,12 +67,13 @@ Route::middleware(['warehouse'])->prefix('warehouse')->group(function () {
     Route::get('/settings/account', [ProfileController::class, 'edit'])->name('warehouse.settings.account');
 
     //الاشعارات بس لسع مو شغالة
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('warehouse.notifications');
+    Route::get('/notifications', [NotificationController::class, 'warehouseIndex'])->name('warehouse.notifications');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('warehouse.notifications.read');
 
     //اعدادات الموقع
     Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('warehouse.settings.cities');
     Route::patch('/settings/cities', [SettingsController::class, 'updateCities'])->name('warehouse.settings.updateCities');
-    Route::post('/location/store', [SettingsController::class, 'store'])->name('location.store');
+    Route::post('/location/store', [SettingsController::class, 'store'])->name('warehouse.location.store');
 
     //التقارير المالية
     Route::get('/financial-report', [ReportController::class, 'financialReport'])->name('warehouse.financial_report');
@@ -204,7 +206,7 @@ Route::middleware(['pharmacy'])->prefix('pharmacy')->group(function () {
     //اعدادات الموقع
     Route::get('/settings/cities', [SettingsController::class, 'cities'])->name('pharmacy.settings.cities');
     Route::patch('/settings/cities', [SettingsController::class, 'updateCities'])->name('pharmacy.settings.updateCities');
-    Route::post('/location/store', [SettingsController::class, 'store'])->name('location.store');
+    Route::post('/location/store', [SettingsController::class, 'store'])->name('pharmacy.location.store');
 
     //اعدادات الحساب بالصيدلية
     Route::get('/settings/account', [ProfileController::class, 'edit'])->name('pharmacy.settings.account');
@@ -216,6 +218,16 @@ Route::middleware(['pharmacy'])->prefix('pharmacy')->group(function () {
 
 
 
+Route::get('/notify',function(){
+    return view('warehouse.notifications.index');
+});
+
+
+Route::get('/send',function(){
+    $user_id=Auth::user()->id;
+    event(new NotificationEvent('hello man', $user_id,'يا حلو يا مغروم '));
+    return Auth::user();
+});
 
 
 
