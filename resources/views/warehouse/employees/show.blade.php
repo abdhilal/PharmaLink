@@ -24,7 +24,7 @@
                 @forelse ($employee->payments as $index => $payment)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ number_format($payment->amount, 2) }} ريال</td>
+                    <td>{{ number_format($payment->amount, 2) }} $</td>
                     <td>{{ $payment->date }}</td>
                     <td>{{ $payment->note ?? 'راتب شهري' }}</td>
                 </tr>

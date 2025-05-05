@@ -28,10 +28,10 @@
                                 $balance = $account->balance;
                                 $status = $balance > 0 ? 'مستحق' : ($balance < 0 ? 'دائن' : 'متساوٍ');
                             @endphp
-                            {{ number_format(abs($balance), 2) }} ريال ({{ $status }})
+                            {{ number_format(abs($balance), 2) }} $ ({{ $status }})
                         </td>
-                        <td>{{ number_format($account->transactions->where('type', 'debt')->sum('amount'), 2) }} ريال</td>
-                        <td>{{ number_format($account->transactions->where('type', 'payment')->sum('amount'), 2) }} ريال</td>
+                        <td>{{ number_format($account->transactions->where('type', 'debt')->sum('amount'), 2) }} $</td>
+                        <td>{{ number_format($account->transactions->where('type', 'payment')->sum('amount'), 2) }} $</td>
                         <td>
                             <form action="{{ route('warehouse.payments.make') }}" method="POST" style="display:inline;">
                                 @csrf

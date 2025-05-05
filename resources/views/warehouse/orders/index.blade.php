@@ -74,9 +74,7 @@
                                                 </button>
                                             </form>
                                         @elseif ($order->status === 'delivered')
-                                            <a href="{{ route('warehouse.orders.edit', $order->id) }}" class="btn btn-sm btn-warning" title="تعديل">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
+
                                             <form action="{{ route('warehouse.orders.cancel', $order->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من الإلغاء؟');">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-danger" title="إلغاء">
@@ -84,6 +82,9 @@
                                                 </button>
                                             </form>
                                         @endif
+                                        {{-- <a href="{{ route('warehouse.orders.edit', $order->id) }}" class="btn btn-sm btn-warning" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a> --}}
                                     </div>
                                 </td>
                             </tr>

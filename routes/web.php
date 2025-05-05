@@ -161,7 +161,7 @@ Route::prefix('staff')->middleware(['auth'])->group(function () {
 
 //التحكم في موظفين المناديب
 
-Route::prefix('warehouse')->middleware(['auth', 'role:warehouse'])->group(function () {
+Route::prefix('warehouse')->middleware(['warehouse'])->group(function () {
 
     Route::get('/staff', [StaffController::class, 'index'])->name('warehouse.staff.index');
     Route::get('/staff/create', [StaffController::class, 'create'])->name('warehouse.staff.create');

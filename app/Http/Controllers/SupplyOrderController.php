@@ -39,7 +39,7 @@ class SupplyOrderController extends Controller
         // جلب الأدوية بدون تكرار الاسم مع الاحتفاظ بالمعلومات الأخرى
         $medicines = Medicine::where('warehouse_id', $warehouse->id)
             ->with('company')
-            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer', 'discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id')
+            ->groupBy('name', 'company_id', 'warehouse_id', 'price', 'quantity', 'date', 'barcode', 'offer', 'discount_percentage', 'profit_percentage', 'selling_price', 'created_at', 'updated_at', 'id','is_hidden')
             ->get();
 
         $suppliers = Supplier::all();

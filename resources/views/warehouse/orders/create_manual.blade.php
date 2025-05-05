@@ -38,7 +38,7 @@
             <button type="button" class="btn btn-primary mt-3" id="add-item">إضافة دواء</button>
 
             <!-- إجمالي الطلبية -->
-            <h6 class="mt-4">الإجمالي: <span id="total-price">0.00</span> ريال</h6>
+            <h6 class="mt-4">الإجمالي: <span id="total-price">0.00</span> $</h6>
 
             <div class="mt-4">
                 <button type="submit" class="btn btn-success">إنشاء الطلبية</button>
@@ -104,7 +104,7 @@
         if (e.target.classList.contains('medicine-select')) {
             const row = e.target.closest('.item-row');
             const price = e.target.selectedOptions[0].dataset.price || 0;
-            row.querySelector('.price-unit').textContent = Number(price).toFixed(2) + ' ريال';
+            row.querySelector('.price-unit').textContent = Number(price).toFixed(2) + ' $';
             updateSubtotal(row);
         }
         if (e.target.classList.contains('quantity-input')) {
@@ -117,7 +117,7 @@
         const quantity = row.querySelector('.quantity-input').value || 0;
         const price = row.querySelector('.medicine-select').selectedOptions[0].dataset.price || 0;
         const subtotal = quantity * price;
-        row.querySelector('.subtotal').textContent = subtotal.toFixed(2) + ' ريال';
+        row.querySelector('.subtotal').textContent = subtotal.toFixed(2) + ' $';
         updateTotalPrice();
     }
 
@@ -125,7 +125,7 @@
     function updateTotalPrice() {
         let total = 0;
         document.querySelectorAll('.subtotal').forEach(function(subtotal) {
-            total += Number(subtotal.textContent.replace(' ريال', '')) || 0;
+            total += Number(subtotal.textContent.replace(' $', '')) || 0;
         });
         document.getElementById('total-price').textContent = total.toFixed(2);
     }

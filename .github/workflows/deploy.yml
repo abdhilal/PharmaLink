@@ -1,0 +1,22 @@
+name: Deploy to InfinityFree via FTP
+
+on:
+  push:
+    branches:
+      - master  # أو 'master' حسب اسم فرعك
+
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./   # مسار الملفات التي تريد رفعها
+          server-dir: /htdocs/   # مجلد الاستضافة في InfinityFree

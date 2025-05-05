@@ -12,7 +12,7 @@
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-        <h6>إجمالي المصاريف: {{ number_format($totalExpenses, 2) }} ريال</h6>
+        <h6>إجمالي المصاريف: {{ number_format($totalExpenses, 2) }} $</h6>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>

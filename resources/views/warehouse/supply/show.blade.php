@@ -104,13 +104,13 @@
                             <a href="{{ route('warehouse.supply_order.edit', $order->id) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bx bx-edit-alt me-1"></i> تعديل
                             </a>
-<form action="{{ route('warehouse.supply_order.destroy', $order->id) }}" method="POST">
+{{-- <form action="{{ route('warehouse.supply_order.destroy', $order->id) }}" method="POST">
     @csrf
     @method('DELETE')
 <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bx bx-warining-alt me-1"></i> حذف</button>
 
 
-                        </form>
+                        </form> --}}
                         </td>
                     </tr>
                     @empty
