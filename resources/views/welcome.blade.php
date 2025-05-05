@@ -21,7 +21,7 @@
             </div>
             <ul class="nav-links">
                 <li><a href="#">Home</a></li>
-                <li><a href="#">Find a doctor</a></li>
+                <li><a href="#">Find</a></li>
                 <li><a href="#">Apps</a></li>
                 <li><a href="#">Testimonials</a></li>
                 <li><a href="#">About us</a></li>
