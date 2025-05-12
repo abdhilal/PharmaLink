@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWelcomeEmail;
 use App\Models\City;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -52,12 +53,14 @@ class RegisteredUserController extends Controller
                 'user_id' => $user->id,
 
             ]);
-            
+
             WarehouseCash::create(['warehouse_id' => $warehouse->id]);
         }
         event(new Registered($user));
 
         Auth::login($user);
+        SendWelcomeEmail::dispatch(Auth::user());
+
 
 
 

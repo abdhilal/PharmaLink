@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use SendWelcomeEmail;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Jobs\SendWelcomeEmail as JobsSendWelcomeEmail;
+use App\Models\User;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,17 +31,18 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if(Auth::user()->role=='warehouse'){
+        if (Auth::user()->role == 'warehouse') {
+
+            JobsSendWelcomeEmail::dispatch(Auth::user());
 
             return redirect(route('warehouse.dashboard', absolute: false));
 
-        }
-        else{
+        } else {
+            
+            JobsSendWelcomeEmail::dispatch(Auth::user());
 
             return redirect(route('pharmacy.warehouses.index', absolute: false));
-
         }
-
     }
 
     /**

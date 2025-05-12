@@ -232,9 +232,19 @@ Route::get('/send',function(){
 
 
 
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
 
+Route::get('/send-mail', function () {
+    $user = (object)[
+        'name' => 'أحمد',
+        'email' => 'abdrahmanmhran3@gmail.com', // اكتب بريدك الحقيقي هنا
+    ];
 
+    Mail::to($user->email)->send(new WelcomeMail($user));
 
+    return 'تم الإرسال إلى البريد الحقيقي بنجاح ✅';
+});
 
 
 require __DIR__ . '/auth.php';
